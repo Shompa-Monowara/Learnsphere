@@ -213,13 +213,13 @@ export default function TeacherAssignments() {
               </button>
             )}
           </div>
-          <div className="inline-flex rounded-xl bg-white p-1 text-sm shadow-sm ring-1 ring-slate-100">
+          <div className="inline-flex rounded-xl bg-white p-0.5 text-[13px] shadow-sm ring-1 ring-slate-100">
             {FILTERS.map((f) => (
               <button
                 key={f.key}
                 onClick={() => setFilter(f.key)}
                 className={cn(
-                  "rounded-lg px-3 py-1.5 font-medium",
+                  "rounded-lg px-3 py-1 font-medium",
                   filter === f.key
                     ? "bg-teal-50 text-teal-700 shadow-sm"
                     : "text-slate-500 hover:text-slate-700",

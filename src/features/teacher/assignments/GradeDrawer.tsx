@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Eye, FileArchive, FileText, Save, X } from "lucide-react";
 import { api, getErrorMessage } from "@/services/api";
-import { BTN_PRIMARY } from "@/features/student/ui";
-import { FIELD, LABEL } from "@/features/teacher/builder/ui";
+import { INPUT } from "@/features/student/ui";
 import { fmtDateTime, initials, type SubmissionItem } from "./types";
 
 interface Props {
@@ -10,6 +9,8 @@ interface Props {
   onClose: () => void;
   onSaved: () => void;
 }
+
+const LABEL = "mb-1.5 block text-sm font-medium text-slate-900";
 
 const isArchive = (name: string) => /\.(zip|rar|7z|tar|gz)$/i.test(name);
 
@@ -54,7 +55,7 @@ export default function GradeDrawer({ sub, onClose, onSaved }: Props) {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-5">
           <div className="flex min-w-0 items-center gap-3">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-teal-50 text-sm font-semibold text-teal-700">
               {initials(sub.studentName)}
@@ -75,7 +76,7 @@ export default function GradeDrawer({ sub, onClose, onSaved }: Props) {
 
         {/* Body */}
         <div className="flex-1 space-y-5 overflow-y-auto px-5 py-5">
-          <div className="flex items-center gap-3 rounded-2xl border border-slate-200 p-4">
+          <div className="flex items-center gap-3 rounded-2xl border border-slate-100 p-4">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-600">
               <FileIcon className="h-5 w-5" />
             </div>
@@ -105,7 +106,7 @@ export default function GradeDrawer({ sub, onClose, onSaved }: Props) {
               type="number"
               min={0}
               max={sub.totalMarks}
-              className={FIELD}
+              className={INPUT}
               placeholder={`0 – ${sub.totalMarks}`}
               value={score}
               onChange={(e) => setScore(e.target.value)}
@@ -115,9 +116,8 @@ export default function GradeDrawer({ sub, onClose, onSaved }: Props) {
           <div>
             <label className={LABEL}>Feedback</label>
             <textarea
-              rows={6}
               maxLength={500}
-              className={FIELD}
+              className={`${INPUT} h-[150px] resize-none`}
               placeholder="Share what worked well and what to improve…"
               value={feedback}
               onChange={(e) => setFeedback(e.target.value)}
@@ -129,7 +129,7 @@ export default function GradeDrawer({ sub, onClose, onSaved }: Props) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-2 border-t border-slate-100 px-5 py-4">
+        <div className="flex items-center justify-end gap-2 border-t border-slate-100 px-5 py-5">
           <button
             onClick={onClose}
             disabled={saving}
@@ -137,7 +137,11 @@ export default function GradeDrawer({ sub, onClose, onSaved }: Props) {
           >
             Cancel
           </button>
-          <button onClick={() => void save()} disabled={saving} className={`${BTN_PRIMARY} gap-2`}>
+          <button
+            onClick={() => void save()}
+            disabled={saving}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-teal-600 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
             <Save className="h-4 w-4" />
             {saving ? "Saving…" : "Save grade"}
           </button>

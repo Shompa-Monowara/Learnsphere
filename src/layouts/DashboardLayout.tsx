@@ -45,7 +45,7 @@ export default function DashboardLayout({
           unread={badges.notifications ?? 0}
           notificationsTo={notificationsTo}
         />
-        <main className="mx-auto w-full max-w-[1200px] px-4 py-8 sm:px-6">
+        <main className="mx-auto w-full max-w-[1448px] px-4 py-8 sm:px-6">
           <Outlet />
         </main>
       </div>

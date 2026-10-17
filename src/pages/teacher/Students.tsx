@@ -1,9 +1,8 @@
 import { useMemo, useState } from "react"
-import { Search } from "lucide-react"
+import { ChevronDown, Search } from "lucide-react"
 import Avatar from "@/features/student/components/Avatar"
 import PageHeader from "@/features/student/components/PageHeader"
 import PageState from "@/features/student/components/PageState"
-import { formatDate, timeAgo } from "@/features/student/utils"
 import type { StudentRow } from "@/features/teacher/types"
 import { useLoad } from "@/features/teacher/useLoad"
 
@@ -11,6 +10,25 @@ const STATUS = {
   active: { label: "Active", cls: "bg-teal-50 text-teal-700" },
   completed: { label: "Completed", cls: "bg-green-50 text-green-700" },
   "at-risk": { label: "At risk", cls: "bg-amber-50 text-amber-700" },
+}
+
+const DAY = 24 * 60 * 60 * 1000
+
+const joinedDate = (iso: string) =>
+  new Date(iso).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" })
+
+/* Today / Yesterday / 3 days ago / 1 week ago, tarpor full date */
+function lastSeen(iso: string) {
+  const startOfToday = new Date().setHours(0, 0, 0, 0)
+  const days = Math.floor((startOfToday - new Date(iso).setHours(0, 0, 0, 0)) / DAY)
+  if (days <= 0) return "Today"
+  if (days === 1) return "Yesterday"
+  if (days < 7) return `${days} days ago`
+  if (days < 30) {
+    const w = Math.floor(days / 7)
+    return `${w} week${w === 1 ? "" : "s"} ago`
+  }
+  return joinedDate(iso)
 }
 
 export default function Students() {
@@ -44,21 +62,24 @@ export default function Students() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search by name or email..."
-            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm outline-none focus:border-teal-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+            className="w-full rounded-xl border border-slate-200 bg-white py-[11px] pl-10 pr-4 text-sm outline-none focus:border-teal-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
           />
         </div>
-        <select
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-teal-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
-        >
-          <option value="all">All students</option>
-          {Array.from({ length: maxCourses }, (_, i) => i + 1).map((n) => (
-            <option key={n} value={n}>
-              {n} course{n === 1 ? "" : "s"}
-            </option>
-          ))}
-        </select>
+        <div className="relative w-full sm:w-[222px]">
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="w-full appearance-none rounded-xl border border-slate-200 bg-white py-[11px] pl-4 pr-10 text-sm outline-none focus:border-teal-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+          >
+            <option value="all">All students</option>
+            {Array.from({ length: maxCourses }, (_, i) => i + 1).map((n) => (
+              <option key={n} value={n}>
+                {n} course{n === 1 ? "" : "s"}
+              </option>
+            ))}
+          </select>
+          <ChevronDown size={16} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" />
+        </div>
       </div>
 
       <PageState loading={loading} error={data ? "" : error} onRetry={() => void reload()}>
@@ -71,47 +92,49 @@ export default function Students() {
             <table className="w-full min-w-[760px] text-left">
               <thead>
                 <tr className="border-b border-slate-100 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:border-slate-800">
-                  <th className="px-5 py-4">Student</th>
-                  <th className="px-5 py-4">Courses</th>
-                  <th className="px-5 py-4">Progress</th>
-                  <th className="px-5 py-4">Last active</th>
-                  <th className="px-5 py-4">Status</th>
-                  <th className="px-5 py-4">Joined</th>
+                  <th className="px-4 py-3.5">Student</th>
+                  <th className="px-4 py-3.5">Courses</th>
+                  <th className="px-4 py-3.5">Progress</th>
+                  <th className="px-4 py-3.5">Last active</th>
+                  <th className="px-4 py-3.5">Status</th>
+                  <th className="px-4 py-3.5">Joined</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {rows.map((s) => (
                   <tr key={s._id}>
-                    <td className="px-5 py-3.5">
+                    <td className="px-4 py-3.5">
                       <div className="flex items-center gap-3">
-                        <Avatar name={s.name} src={s.avatar} size={38} />
+                        <Avatar name={s.name} src={s.avatar} size={36} />
                         <div className="min-w-0">
                           <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">{s.name}</p>
                           <p className="truncate text-xs text-slate-500">{s.email}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-5 py-3.5 text-sm text-slate-700 dark:text-slate-200" title={s.courseTitles.join(", ")}>
+                    <td className="px-4 py-3.5 text-sm text-slate-700 dark:text-slate-200" title={s.courseTitles.join(", ")}>
                       {s.courses}
                     </td>
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center gap-3">
+                    <td className="px-4 py-3.5">
+                      <div className="flex items-center gap-2">
                         <div className="h-1.5 w-20 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                           <div
                             className={`h-full rounded-full ${s.progress >= 100 ? "bg-green-500" : "bg-teal-600"}`}
                             style={{ width: `${s.progress}%` }}
                           />
                         </div>
-                        <span className="text-xs font-medium text-slate-600 dark:text-slate-300">{s.progress}%</span>
+                        <span className="w-10 text-right text-[13px] font-medium text-slate-600 dark:text-slate-300">
+                          {s.progress}%
+                        </span>
                       </div>
                     </td>
-                    <td className="px-5 py-3.5 text-sm text-slate-500">{timeAgo(s.lastActive)}</td>
-                    <td className="px-5 py-3.5">
+                    <td className="px-4 py-3.5 text-sm text-slate-500">{lastSeen(s.lastActive)}</td>
+                    <td className="px-4 py-3.5">
                       <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${STATUS[s.status].cls}`}>
                         {STATUS[s.status].label}
                       </span>
                     </td>
-                    <td className="px-5 py-3.5 text-sm text-slate-500">{formatDate(s.joined)}</td>
+                    <td className="px-4 py-3.5 text-sm text-slate-500">{joinedDate(s.joined)}</td>
                   </tr>
                 ))}
               </tbody>

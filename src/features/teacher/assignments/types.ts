@@ -60,14 +60,14 @@ export const STATUS_CLASS: Record<AssignmentStatus, string> = {
 
 export const fmtDate = (iso: string | null): string =>
   iso
-    ? new Date(iso).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" })
+    ? new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
     : "—";
 
 /* "Oct 10, 2026 · 9:14 PM" */
 export const fmtDateTime = (iso: string | null): string => {
   if (!iso) return "—";
   const d = new Date(iso);
-  const date = d.toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" });
+  const date = d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   const time = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
   return `${date} · ${time}`;
 };

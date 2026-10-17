@@ -83,7 +83,7 @@ export default function Sidebar({
         <div className="flex-1 overflow-y-auto px-3 py-5">
           <p
             className={cn(
-              "mb-3 px-3 text-[11px] font-semibold uppercase tracking-wider",
+              "mb-[18px] px-3 text-[11px] font-semibold uppercase tracking-wider",
               a.label,
               collapsed && "lg:hidden"
             )}
@@ -103,7 +103,7 @@ export default function Sidebar({
                   title={collapsed ? text : undefined}
                   className={({ isActive }) =>
                     cn(
-                      "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                      "flex items-center gap-3 rounded-xl px-3 py-3.5 text-sm font-medium transition-colors",
                       isActive
                         ? `${a.active} text-white`
                         : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800",

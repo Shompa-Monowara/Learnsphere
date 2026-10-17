@@ -1,6 +1,7 @@
-import { ArrowDown, ArrowUp, Check, Move, Trash2 } from "lucide-react"
+import { ArrowDown, ArrowUp, Check, Copy, Move, Trash2 } from "lucide-react"
 import { FIELD, LABEL } from "@/features/teacher/builder/ui"
-import type { QQuestion } from "@/features/teacher/quizzes/types"
+import type { QQuestion, QuestionErrors } from "@/features/teacher/quizzes/types"
+import { FieldError, INVALID } from "@/features/teacher/quizzes/ui"
 
 const LETTERS = "ABCDEFGH"
 
@@ -8,65 +9,110 @@ interface Props {
   q: QQuestion
   index: number
   total: number
+  errors?: QuestionErrors
   onChange: (p: Partial<QQuestion>) => void
   onMove: (dir: -1 | 1) => void
+  onDuplicate?: () => void
   onRemove: () => void
 }
 
-export default function QuestionCard({ q, index, total, onChange, onMove, onRemove }: Props) {
+export default function QuestionCard({
+  q,
+  index,
+  total,
+  errors,
+  onChange,
+  onMove,
+  onDuplicate,
+  onRemove,
+}: Props) {
   const setOption = (oi: number, value: string) =>
     onChange({ options: q.options.map((o, i) => (i === oi ? value : o)) })
 
+  // QuestionErrors টাইপ অনুযায়ী নিরাপদভাবে এরর পাওয়ার হেল্পার
+  const qErrors = errors as Record<string, unknown> | undefined
+  const optionErrors = qErrors?.options as Record<number, string | undefined> | (string | undefined)[] | undefined
+
+  const textErr = typeof qErrors?.text === "string" ? qErrors.text : undefined
+  const correctIndexErr = typeof qErrors?.correctIndex === "string" ? qErrors.correctIndex : undefined
+  const marksErr = typeof qErrors?.marks === "string" ? qErrors.marks : undefined
+
   return (
     <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-      <div className="flex items-center gap-3">
-        <span className="text-slate-300" title="Use the arrows below to reorder">
+      <div className="flex items-start gap-3">
+        <span className="mt-3 text-slate-300" title="Use the arrows below to reorder">
           <Move size={16} />
         </span>
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-100 text-xs font-bold text-teal-700 dark:bg-teal-500/20 dark:text-teal-300">
+        <span className="mt-2.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-100 text-xs font-bold text-teal-700 dark:bg-teal-500/20 dark:text-teal-300">
           {index + 1}
         </span>
-        <input
-          value={q.text}
-          onChange={(e) => onChange({ text: e.target.value })}
-          placeholder="Type the question"
-          className={`${FIELD} font-medium`}
-        />
+        <div className="flex-1">
+          <input
+            value={q.text}
+            onChange={(e) => onChange({ text: e.target.value })}
+            placeholder="Type the question"
+            className={`${FIELD} font-medium ${textErr ? INVALID : ""}`}
+          />
+          <FieldError message={textErr} />
+        </div>
       </div>
 
       <div className="pl-[4.25rem]">
-        <div className="mt-4 space-y-2.5">
-          {q.options.map((opt, oi) => {
-            const correct = q.correctIndex === oi
-            return (
-              <div key={oi} className="flex items-center gap-3">
-                <button
-                  type="button"
-                  aria-label={`Mark option ${LETTERS[oi]} as correct`}
-                  onClick={() => onChange({ correctIndex: oi })}
-                  className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition ${
-                    correct
-                      ? "border-green-600 bg-green-600 text-white"
-                      : "border-slate-200 bg-white hover:border-green-400 dark:border-slate-700 dark:bg-slate-900"
-                  }`}
-                >
-                  {correct && <Check size={14} strokeWidth={3} />}
-                </button>
-                <div className="relative flex-1">
-                  <input
-                    value={opt}
-                    onChange={(e) => setOption(oi, e.target.value)}
-                    placeholder={`Option ${LETTERS[oi]}`}
-                    className={`${FIELD} pr-9`}
-                  />
-                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">
-                    {LETTERS[oi]}
-                  </span>
+        {/* MCQ Options */}
+        {q.type === "mcq" && (
+          <div className="mt-4 space-y-2.5">
+            {q.options.map((opt, oi) => {
+              const correct = q.correctIndex === oi
+              const optErr = optionErrors ? (optionErrors as Record<number, string | undefined>)[oi] : undefined
+
+              return (
+                <div key={oi} className="space-y-1">
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      aria-label={`Mark option ${LETTERS[oi]} as correct`}
+                      onClick={() => onChange({ correctIndex: oi })}
+                      className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition ${
+                        correct
+                          ? "border-green-600 bg-green-600 text-white"
+                          : "border-slate-200 bg-white hover:border-green-400 dark:border-slate-700 dark:bg-slate-900"
+                      }`}
+                    >
+                      {correct && <Check size={14} strokeWidth={3} />}
+                    </button>
+                    <div className="relative flex-1">
+                      <input
+                        value={opt}
+                        onChange={(e) => setOption(oi, e.target.value)}
+                        placeholder={`Option ${LETTERS[oi]}`}
+                        className={`${FIELD} pr-9 ${optErr ? INVALID : ""}`}
+                      />
+                      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">
+                        {LETTERS[oi]}
+                      </span>
+                    </div>
+                  </div>
+                  <FieldError message={optErr} />
                 </div>
-              </div>
-            )
-          })}
-        </div>
+              )
+            })}
+            <FieldError message={correctIndexErr} />
+          </div>
+        )}
+
+        {/* Written Question Sample Answer */}
+        {q.type === "written" && (
+          <div className="mt-4">
+            <label className={LABEL}>Sample / Model Answer</label>
+            <textarea
+              rows={3}
+              value={q.sampleAnswer ?? ""}
+              onChange={(e) => onChange({ sampleAnswer: e.target.value })}
+              placeholder="Provide a sample answer or key points..."
+              className={`${FIELD} w-full`}
+            />
+          </div>
+        )}
 
         <div className="mt-4 grid gap-3 sm:grid-cols-[100px_1fr]">
           <div>
@@ -76,8 +122,9 @@ export default function QuestionCard({ q, index, total, onChange, onMove, onRemo
               min={1}
               value={q.marks}
               onChange={(e) => onChange({ marks: Math.max(1, Number(e.target.value) || 1) })}
-              className={FIELD}
+              className={`${FIELD} ${marksErr ? INVALID : ""}`}
             />
+            <FieldError message={marksErr} />
           </div>
           <div>
             <label className={LABEL}>Explanation</label>
@@ -111,13 +158,25 @@ export default function QuestionCard({ q, index, total, onChange, onMove, onRemo
               <ArrowDown size={15} />
             </button>
           </div>
-          <button
-            type="button"
-            onClick={onRemove}
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-red-600"
-          >
-            <Trash2 size={13} /> Delete question
-          </button>
+
+          <div className="flex items-center gap-3">
+            {onDuplicate && (
+              <button
+                type="button"
+                onClick={onDuplicate}
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-teal-600"
+              >
+                <Copy size={13} /> Duplicate
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={onRemove}
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-red-600"
+            >
+              <Trash2 size={13} /> Delete question
+            </button>
+          </div>
         </div>
       </div>
     </div>
