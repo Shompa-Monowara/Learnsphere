@@ -11,29 +11,13 @@ import {
 export default function AuthShowcase() {
   const reduce = useReducedMotion()
 
-  // Demo site-er moto khub subtle o natural float
-  const floatAnim = (delay = 0, yDist = 4) =>
-    reduce
-      ? {}
-      : {
-          animate: {
-            y: [-yDist, yDist, -yDist],
-          },
-          transition: {
-            duration: 5,
-            delay,
-            repeat: Infinity,
-            ease: "easeInOut",
-          },
-        }
-
   return (
     <div className="relative hidden h-full min-h-screen w-full flex-col justify-between overflow-hidden bg-gradient-to-b from-[#0d6358] via-[#094d44] to-[#053a33] p-12 text-white lg:flex select-none">
-      {/* Background Soft Ambient Lights (Demo-r moto glowing gradient) */}
+      {/* Background Soft Ambient Lights */}
       <div className="pointer-events-none absolute left-1/2 top-[46%] -translate-x-1/2 -translate-y-1/2 h-[520px] w-[520px] rounded-full bg-[#188a7b]/25 blur-[120px]" />
       <div className="pointer-events-none absolute right-4 top-1/4 h-80 w-80 rounded-full bg-[#f59e0b]/10 blur-[130px]" />
 
-      {/* 1. Header Branding (Demo matching) */}
+      {/* 1. Header Branding */}
       <div className="relative z-10 flex items-center gap-3">
         <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md shadow-sm">
           <GraduationCap size={22} className="text-white" />
@@ -52,7 +36,7 @@ export default function AuthShowcase() {
           Lectures, assignments, quizzes, and progress tracking — all in one calm, focused place for teachers and students.
         </p>
 
-        {/* 🌟 MAIN DASHBOARD CARD (Chora, wide ebong demo-r moto exact glass look) 🌟 */}
+        {/* 🌟 MAIN DASHBOARD CARD 🌟 */}
         <div className="relative mt-10 w-full max-w-[470px] rounded-[26px] border border-white/20 border-t-white/30 bg-white/[0.08] p-6 text-left shadow-[0_25px_60px_-15px_rgba(0,0,0,0.35)] backdrop-blur-2xl">
           
           {/* Header Row: Lesson Name & Percentage */}
@@ -83,7 +67,7 @@ export default function AuthShowcase() {
             />
           </div>
 
-          {/* 3 Bottom Sub-Cards (Chora ebong balanced grid) */}
+          {/* 3 Bottom Sub-Cards */}
           <div className="mt-5 grid grid-cols-3 gap-3">
             {[
               { icon: BookOpen, value: "42", label: "Lessons" },
@@ -107,9 +91,18 @@ export default function AuthShowcase() {
             ))}
           </div>
 
-          {/* FLOATING BADGE 1: Quiz passed (Positioned perfectly over progress line) */}
+          {/* FLOATING BADGE 1: Quiz passed */}
           <motion.div
-            {...floatAnim(0, 4)}
+            animate={reduce ? undefined : { y: [-4, 4, -4] }}
+            transition={
+              reduce
+                ? undefined
+                : {
+                    duration: 5,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }
+            }
             style={{ willChange: "transform", transform: "translateZ(0)" }}
             className="absolute -left-7 top-[34%] z-20 flex items-center gap-3 rounded-2xl bg-white px-3.5 py-2.5 text-slate-800 shadow-[0_12px_28px_rgba(0,0,0,0.18)] border border-slate-100"
           >
@@ -122,9 +115,19 @@ export default function AuthShowcase() {
             </div>
           </motion.div>
 
-          {/* FLOATING BADGE 2: Certificate earned (Bottom right corner) */}
+          {/* FLOATING BADGE 2: Certificate earned */}
           <motion.div
-            {...floatAnim(0.8, -4)}
+            animate={reduce ? undefined : { y: [4, -4, 4] }}
+            transition={
+              reduce
+                ? undefined
+                : {
+                    duration: 5,
+                    delay: 0.8,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }
+            }
             style={{ willChange: "transform", transform: "translateZ(0)" }}
             className="absolute -right-5 bottom-3 z-20 flex items-center gap-3 rounded-2xl bg-white px-3.5 py-2.5 text-slate-800 shadow-[0_12px_28px_rgba(0,0,0,0.18)] border border-slate-100"
           >
@@ -139,7 +142,7 @@ export default function AuthShowcase() {
         </div>
       </div>
 
-      {/* 3. Bottom Testimonial Banner (Wide, authentic glassmorphism) */}
+      {/* 3. Bottom Testimonial Banner */}
       <figure className="relative z-10 w-full rounded-2xl border border-white/15 bg-white/[0.08] p-6 backdrop-blur-2xl shadow-xl">
         <span className="text-2xl font-serif text-teal-200/70 select-none block leading-none mb-2">
           ““

@@ -10,6 +10,7 @@ export interface AssignmentItem {
   total: number;
   graded: number;
   enrolled: number;
+  isPublished: boolean;
   closed: boolean;
 }
 
@@ -36,6 +37,26 @@ export interface CourseOption {
 }
 
 export type SubFilter = "all" | "pending" | "graded";
+export type AssignmentFilter = "all" | "published" | "draft";
+export type AssignmentStatus = "draft" | "active" | "closed";
+
+export const assignmentStatus = (a: Pick<AssignmentItem, "isPublished" | "closed">): AssignmentStatus => {
+  if (!a.isPublished) return "draft";
+  if (a.closed) return "closed";
+  return "active";
+};
+
+export const STATUS_LABEL: Record<AssignmentStatus, string> = {
+  draft: "Draft",
+  active: "Active",
+  closed: "Closed",
+};
+
+export const STATUS_CLASS: Record<AssignmentStatus, string> = {
+  draft: "bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400",
+  active: "bg-green-50 text-green-600 dark:bg-green-500/10 dark:text-green-400",
+  closed: "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400",
+};
 
 export const fmtDate = (iso: string | null): string =>
   iso

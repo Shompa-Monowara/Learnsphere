@@ -34,21 +34,6 @@ const COURSES = [
 export default function Hero() {
   const reduce = useReducedMotion()
 
-  const floatAnim = (delay = 0, yDist = 6) =>
-    reduce
-      ? {}
-      : {
-          animate: {
-            y: [-yDist, yDist, -yDist],
-          },
-          transition: {
-            duration: 5,
-            delay,
-            repeat: Infinity,
-            ease: "easeInOut",
-          },
-        }
-
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-[#f0fdf9]/80 via-white to-white py-14 sm:py-20 lg:py-24">
       {/* Background Soft Glows */}
@@ -143,7 +128,7 @@ export default function Hero() {
           </div>
         </motion.div>
 
-        {/* Right Side: Demo Matching Wide Landscape Dashboard Card */}
+        {/* Right Side: Dashboard Showcase */}
         <motion.div
           initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -152,7 +137,7 @@ export default function Hero() {
         >
           {/* Main Browser Frame */}
           <div className="w-full overflow-hidden rounded-[28px] border border-slate-200/90 bg-white shadow-[0_24px_60px_-15px_rgba(15,23,42,0.12)]">
-            {/* Top Browser Bar (Dots + Address Input Bar) */}
+            {/* Top Browser Bar */}
             <div className="flex items-center justify-between border-b border-slate-100 bg-[#fbfcfd] px-5 py-3">
               <div className="flex items-center gap-1.5">
                 <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
@@ -165,7 +150,7 @@ export default function Hero() {
               <div className="w-8" />
             </div>
 
-            {/* Content Row: Sidebar + Dashboard Body */}
+            {/* Content Row */}
             <div className="flex">
               {/* Left Mini Sidebar */}
               <div className="flex w-16 flex-col items-center gap-6 border-r border-slate-100/90 py-6">
@@ -260,9 +245,18 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* Floating Certificate Ready Badge (Demo-r moto exact) */}
+          {/* Floating Certificate Ready Badge (Type-safe direct animation props) */}
           <motion.div
-            {...floatAnim(0, 5)}
+            animate={reduce ? undefined : { y: [-5, 5, -5] }}
+            transition={
+              reduce
+                ? undefined
+                : {
+                    duration: 5,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }
+            }
             style={{ willChange: "transform", transform: "translateZ(0)" }}
             className="absolute -bottom-5 -left-6 z-20 flex items-center gap-3 rounded-2xl border border-slate-100/90 bg-white px-4 py-3 shadow-[0_16px_36px_-6px_rgba(0,0,0,0.12)]"
           >

@@ -1,79 +1,45 @@
-export interface AssignmentItem {
-  id: string;
-  title: string;
-  instructions: string;
-  attachments: string[];
-  courseId: string;
-  courseTitle: string;
-  deadline: string | null;
-  totalMarks: number;
-  total: number;
-  graded: number;
-  enrolled: number;
-  closed: boolean;
+export interface EnrollmentPoint {
+  label: string
+  enrollments: number
 }
 
-export interface SubmissionItem {
-  id: string;
-  assignmentId: string;
-  assignmentTitle: string;
-  totalMarks: number;
-  studentName: string;
-  studentEmail: string;
-  fileName: string;
-  fileUrl: string;
-  text: string;
-  submittedAt: string | null;
-  score: number | null;
-  feedback: string;
-  graded: boolean;
+export interface RevenuePoint {
+  label: string
+  revenue: number
 }
 
-export interface CourseOption {
-  id: string;
-  title: string;
+export interface TeacherStats {
+  totalCourses: number
+  totalStudents: number
+  totalRevenue: number
+  avgRating: number
+  [key: string]: number
 }
 
-export type SubFilter = "all" | "pending" | "graded";
+export interface TeacherCourseSummary {
+  id: string
+  title: string
+  thumbnail?: string
+  students: number
+  revenue: number
+  rating: number
+}
 
-export const fmtDate = (iso: string | null): string =>
-  iso
-    ? new Date(iso).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" })
-    : "—";
+export interface TeacherReviewSummary {
+  id: string
+  studentName: string
+  courseTitle: string
+  rating: number
+  comment: string
+  createdAt: string
+}
 
-export const fmtDateTime = (iso: string | null): string =>
-  iso
-    ? new Date(iso).toLocaleString("en-US", {
-        month: "short",
-        day: "2-digit",
-        year: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-      })
-    : "—";
-
-export const initials = (name: string): string =>
-  name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase())
-    .join("") || "S";
-
-/* <input type="date"> er jonno YYYY-MM-DD (local) */
-export const toDateInput = (iso: string | null): string => {
-  if (!iso) return "";
-  const d = new Date(iso);
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${d.getFullYear()}-${m}-${day}`;
-};
-
-export const fileNameFromUrl = (url: string): string => {
-  const last = url.split("?")[0].split("/").pop() ?? "file";
-  try {
-    return decodeURIComponent(last);
-  } catch {
-    return last;
-  }
-};
+export interface TeacherDashboardData {
+  success?: boolean
+  stats?: TeacherStats
+  enrollmentTrend: EnrollmentPoint[]
+  enrollmentGrowth?: number | null
+  revenueTrend?: RevenuePoint[]
+  topCourses?: TeacherCourseSummary[]
+  recentReviews?: TeacherReviewSummary[]
+}
