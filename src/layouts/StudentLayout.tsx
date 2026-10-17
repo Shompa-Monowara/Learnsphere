@@ -17,6 +17,13 @@ function StudentShell() {
       label="Learning workspace"
       badges={badges}
       notificationsTo="/student/notifications"
+      accent="teal"
+      promo={{
+        title: "Keep learning",
+        text: "Explore new courses and grow your skills every day.",
+        to: "/courses",
+        cta: "Browse courses",
+      }}
     />
   )
 }

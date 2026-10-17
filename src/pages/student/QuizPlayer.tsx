@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react"
 import { Link, useParams } from "react-router-dom"
 import Notice from "@/features/student/components/Notice"
 import PageState from "@/features/student/components/PageState"
-import type { PlayQuiz, QuizResult } from "@/features/student/portal-types"
+import type { AttemptResult, PlayQuizData } from "@/features/student/quiz-play-types"
 import { useStudent } from "@/features/student/student-context"
 import { BTN_OUTLINE, BTN_PRIMARY, CARD } from "@/features/student/ui"
 import { useFetch } from "@/hooks/useFetch"
@@ -12,13 +12,20 @@ import { api, getErrorMessage } from "@/services/api"
 
 const clock = (s: number) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`
 
+function StatusIcon({ ok, written }: { ok: boolean | null; written: boolean }) {
+  if (ok === true) return <CheckCircle2 className="mt-0.5 shrink-0 text-green-600" size={18} />
+  if (ok === false) return <XCircle className="mt-0.5 shrink-0 text-red-500" size={18} />
+  if (written) return <Clock className="mt-0.5 shrink-0 text-amber-500" size={18} />
+  return <span className="w-[18px] shrink-0" />
+}
+
 export default function QuizPlayer() {
   const { id } = useParams()
   const { refresh } = useStudent()
-  const { data, loading, error, reload } = useFetch<{ quiz: PlayQuiz }>(`/quizzes/${id}`)
+  const { data, loading, error, reload } = useFetch<{ quiz: PlayQuizData }>(`/quizzes/${id}`)
 
-  const [answers, setAnswers] = useState<Record<number, number>>({})
-  const [result, setResult] = useState<QuizResult | null>(null)
+  const [answers, setAnswers] = useState<Record<number, number | string>>({})
+  const [result, setResult] = useState<AttemptResult | null>(null)
   const [busy, setBusy] = useState(false)
   const [submitError, setSubmitError] = useState("")
   const [startedAt, setStartedAt] = useState(() => Date.now())
@@ -35,13 +42,20 @@ export default function QuizPlayer() {
 
   const remaining = quiz ? Math.max(0, quiz.duration * 60 - Math.floor((now - startedAt) / 1000)) : 0
 
+  const answered = quiz
+    ? quiz.questions.filter((_, i) => {
+        const a = answers[i]
+        return typeof a === "number" || (typeof a === "string" && a.trim() !== "")
+      }).length
+    : 0
+
   const submit = async () => {
     if (!quiz || busy) return
     setBusy(true)
     setSubmitError("")
     try {
       const payload = quiz.questions.map((_, i) => answers[i] ?? null)
-      const res = await api.post<{ result: QuizResult }>(`/quizzes/${quiz._id}/attempt`, { answers: payload })
+      const res = await api.post<{ result: AttemptResult }>(`/quizzes/${quiz._id}/attempt`, { answers: payload })
       setResult(res.data.result)
       void refresh()
     } catch (err) {
@@ -80,46 +94,82 @@ export default function QuizPlayer() {
         {quiz && result && (
           <>
             <div className={cn(CARD, "p-8 text-center")}>
-              <p className={cn("text-5xl font-bold", result.passed ? "text-green-600" : "text-orange-500")}>{result.percent}%</p>
-              <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
-                {result.passed ? "You passed!" : "Not quite there yet"}
-              </p>
-              <p className="mt-1 text-sm text-slate-500">
-                {result.correct} correct · {result.incorrect} incorrect · Passing score {quiz.passingScore}%
-              </p>
+              {result.status === "pending" ? (
+                <>
+                  <p className="text-5xl font-bold text-amber-500">{result.percent}%</p>
+                  <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">Waiting for teacher review</p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    {result.pending} written {result.pending === 1 ? "answer needs" : "answers need"} grading. Score so far: {result.score}/
+                    {result.total}. Your final result will update after your teacher grades it.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className={cn("text-5xl font-bold", result.passed ? "text-green-600" : "text-orange-500")}>{result.percent}%</p>
+                  <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
+                    {result.passed ? "You passed!" : "Not quite there yet"}
+                  </p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    {result.correct} correct · {result.incorrect} incorrect · Passing score {quiz.passingScore}%
+                  </p>
+                </>
+              )}
               <div className="mt-6 flex justify-center gap-3">
                 <button type="button" onClick={retake} className={BTN_PRIMARY}>Retake quiz</button>
                 <Link to="/student/quizzes" className={BTN_OUTLINE}>All quizzes</Link>
               </div>
             </div>
 
+            {!result.reveal && (
+              <p className="rounded-xl bg-slate-50 px-4 py-3 text-center text-sm text-slate-500 dark:bg-slate-800/50">
+                Correct answers are not shown for this quiz.
+              </p>
+            )}
+
             <div className="space-y-4">
-              {result.review.map((r, i) => (
-                <div key={i} className={cn(CARD, "p-5")}>
-                  <div className="flex items-start gap-3">
-                    {r.isCorrect ? <CheckCircle2 className="mt-0.5 shrink-0 text-green-600" size={18} /> : <XCircle className="mt-0.5 shrink-0 text-red-500" size={18} />}
-                    <p className="font-medium text-slate-900 dark:text-white">{i + 1}. {r.question}</p>
-                  </div>
-                  <div className="mt-3 space-y-2">
-                    {r.options.map((o, oi) => (
-                      <div
-                        key={oi}
-                        className={cn(
-                          "rounded-lg border px-3 py-2 text-sm",
-                          oi === r.correctIndex
-                            ? "border-green-300 bg-green-50 text-green-800"
-                            : oi === r.selected
-                              ? "border-red-300 bg-red-50 text-red-800"
-                              : "border-slate-100 text-slate-600 dark:border-slate-800 dark:text-slate-300"
-                        )}
-                      >
-                        {o}
+              {result.review.map((r, i) => {
+                const written = r.type === "written"
+                return (
+                  <div key={i} className={cn(CARD, "p-5")}>
+                    <div className="flex items-start gap-3">
+                      <StatusIcon ok={r.isCorrect} written={written} />
+                      <p className="font-medium text-slate-900 dark:text-white">{i + 1}. {r.question}</p>
+                    </div>
+
+                    {written ? (
+                      <div className="mt-3">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Your answer</p>
+                        <p className="mt-1 whitespace-pre-wrap rounded-lg border border-slate-100 px-3 py-2 text-sm text-slate-700 dark:border-slate-800 dark:text-slate-300">
+                          {r.answer || "No answer given"}
+                        </p>
+                        {r.answer && <p className="mt-2 text-xs text-amber-600">Graded by your teacher.</p>}
                       </div>
-                    ))}
+                    ) : (
+                      <div className="mt-3 space-y-2">
+                        {r.options.map((o, oi) => (
+                          <div
+                            key={oi}
+                            className={cn(
+                              "rounded-lg border px-3 py-2 text-sm",
+                              r.correctIndex !== null && oi === r.correctIndex
+                                ? "border-green-300 bg-green-50 text-green-800"
+                                : oi === r.selected
+                                  ? r.correctIndex !== null
+                                    ? "border-red-300 bg-red-50 text-red-800"
+                                    : "border-teal-300 bg-teal-50 text-teal-800"
+                                  : "border-slate-100 text-slate-600 dark:border-slate-800 dark:text-slate-300"
+                            )}
+                          >
+                            {o}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {r.explanation && <p className="mt-3 text-sm text-slate-500">{r.explanation}</p>}
                   </div>
-                  {r.explanation && <p className="mt-3 text-sm text-slate-500">{r.explanation}</p>}
-                </div>
-              ))}
+                )
+              })}
             </div>
           </>
         )}
@@ -130,7 +180,7 @@ export default function QuizPlayer() {
               <div>
                 <h1 className="font-bold text-slate-900 dark:text-white">{quiz.title}</h1>
                 <p className="text-xs text-slate-500">
-                  {Object.keys(answers).length}/{quiz.questions.length} answered · Pass at {quiz.passingScore}%
+                  {answered}/{quiz.questions.length} answered · Pass at {quiz.passingScore}%
                 </p>
               </div>
               <span className={cn("flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold", remaining <= 60 ? "bg-red-50 text-red-600" : "bg-teal-50 text-teal-700")}>
@@ -140,27 +190,45 @@ export default function QuizPlayer() {
 
             {quiz.questions.map((q, qi) => (
               <div key={q._id} className={cn(CARD, "p-5")}>
-                <p className="font-medium text-slate-900 dark:text-white">{qi + 1}. {q.text}</p>
-                <div className="mt-3 space-y-2">
-                  {q.options.map((o, oi) => (
-                    <button
-                      key={oi}
-                      type="button"
-                      onClick={() => setAnswers((prev) => ({ ...prev, [qi]: oi }))}
-                      className={cn(
-                        "flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm transition-colors",
-                        answers[qi] === oi
-                          ? "border-teal-500 bg-teal-50 text-teal-800 dark:bg-teal-500/10 dark:text-teal-200"
-                          : "border-slate-200 hover:border-teal-300 dark:border-slate-700"
-                      )}
-                    >
-                      <span className={cn("flex h-5 w-5 shrink-0 items-center justify-center rounded-full border", answers[qi] === oi ? "border-teal-600 bg-teal-600" : "border-slate-300")}>
-                        {answers[qi] === oi && <span className="h-2 w-2 rounded-full bg-white" />}
-                      </span>
-                      {o}
-                    </button>
-                  ))}
+                <div className="flex items-start justify-between gap-3">
+                  <p className="font-medium text-slate-900 dark:text-white">{qi + 1}. {q.text}</p>
+                  {q.marks ? <span className="shrink-0 text-xs text-slate-400">{q.marks} {q.marks === 1 ? "mark" : "marks"}</span> : null}
                 </div>
+
+                {q.type === "written" ? (
+                  <div className="mt-3">
+                    <textarea
+                      rows={5}
+                      maxLength={5000}
+                      value={typeof answers[qi] === "string" ? (answers[qi] as string) : ""}
+                      onChange={(e) => setAnswers((prev) => ({ ...prev, [qi]: e.target.value }))}
+                      placeholder="Write your answer here"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none focus:border-teal-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                    />
+                    <p className="mt-1 text-xs text-slate-400">Your teacher will grade this answer.</p>
+                  </div>
+                ) : (
+                  <div className="mt-3 space-y-2">
+                    {q.options.map((o, oi) => (
+                      <button
+                        key={oi}
+                        type="button"
+                        onClick={() => setAnswers((prev) => ({ ...prev, [qi]: oi }))}
+                        className={cn(
+                          "flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm transition-colors",
+                          answers[qi] === oi
+                            ? "border-teal-500 bg-teal-50 text-teal-800 dark:bg-teal-500/10 dark:text-teal-200"
+                            : "border-slate-200 hover:border-teal-300 dark:border-slate-700"
+                        )}
+                      >
+                        <span className={cn("flex h-5 w-5 shrink-0 items-center justify-center rounded-full border", answers[qi] === oi ? "border-teal-600 bg-teal-600" : "border-slate-300")}>
+                          {answers[qi] === oi && <span className="h-2 w-2 rounded-full bg-white" />}
+                        </span>
+                        {o}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
 

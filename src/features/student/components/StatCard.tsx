@@ -41,7 +41,7 @@ export default function StatCard({ label, value, icon: Icon, tone, bars, delta }
 
       <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">{label}</p>
       <div className="mt-1 flex items-end justify-between">
-        <p className="text-3xl font-bold text-slate-900 dark:text-white">{value}</p>
+        <p className="text-3xl font-bold text-slate-900 dark:text-white">{value.toLocaleString("en-US")}</p>
         <div className="flex h-8 items-end gap-1">
           {bars.map((b, i) => (
             <span
