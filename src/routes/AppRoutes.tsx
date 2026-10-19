@@ -31,6 +31,7 @@ import TeacherQuizzes from "@/pages/teacher/Quizzes"
 import TeacherReviews from "@/pages/teacher/Reviews"
 import TeacherStudents from "@/pages/teacher/Students"
 import ProtectedRoute from "./ProtectedRoute"
+import OAuthCallback from "@/features/auth/OAuthCallback"
 
 export default function AppRoutes() {
   return (
@@ -40,6 +41,8 @@ export default function AppRoutes() {
         <Route path="/courses" element={<Courses />} />
         <Route path="/courses/:id" element={<CourseDetails />} />
       </Route>
+
+      <Route path="/auth/callback" element={<OAuthCallback />} />
 
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<Login />} />

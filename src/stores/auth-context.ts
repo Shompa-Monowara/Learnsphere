@@ -19,11 +19,24 @@ export interface RegisterPayload {
   role: "student" | "teacher"
 }
 
+export interface CompleteRegisterPayload extends RegisterPayload {
+  otp: string
+}
+
+export interface OtpSent {
+  expiresInSeconds: number
+  resendAfterSeconds: number
+}
+
 export interface AuthContextValue {
   user: User | null
   loading: boolean
   login: (email: string, password: string, remember: boolean) => Promise<User>
   register: (data: RegisterPayload) => Promise<User>
+  requestRegisterOtp: (data: RegisterPayload) => Promise<OtpSent>
+  resendRegisterOtp: (email: string) => Promise<OtpSent>
+  completeRegister: (data: CompleteRegisterPayload) => Promise<User>
+  exchangeOAuthCode: (code: string) => Promise<User>
   logout: () => void
   updateUser: (patch: Partial<User>) => void
 }

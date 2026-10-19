@@ -84,62 +84,73 @@ export default function Students() {
 
       <PageState loading={loading} error={data ? "" : error} onRetry={() => void reload()}>
         <div className="overflow-x-auto rounded-2xl border border-slate-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          {rows.length === 0 ? (
-            <p className="py-16 text-center text-sm text-slate-500">
-              {data?.students.length ? "No students match your filters." : "No students have enrolled yet."}
-            </p>
-          ) : (
-            <table className="w-full min-w-[760px] text-left">
-              <thead>
-                <tr className="border-b border-slate-100 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:border-slate-800">
-                  <th className="px-4 py-3.5">Student</th>
-                  <th className="px-4 py-3.5">Courses</th>
-                  <th className="px-4 py-3.5">Progress</th>
-                  <th className="px-4 py-3.5">Last active</th>
-                  <th className="px-4 py-3.5">Status</th>
-                  <th className="px-4 py-3.5">Joined</th>
+          <table className="w-full min-w-[900px] table-fixed text-left">
+            <colgroup>
+              <col style={{ width: "26.8%" }} />
+              <col style={{ width: "11.5%" }} />
+              <col style={{ width: "19.8%" }} />
+              <col style={{ width: "13.5%" }} />
+              <col style={{ width: "14.7%" }} />
+              <col style={{ width: "13.7%" }} />
+            </colgroup>
+            <thead>
+              <tr className="border-b border-slate-100 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:border-slate-800">
+                <th className="px-4 py-3.5">Student</th>
+                <th className="px-4 py-3.5">Courses</th>
+                <th className="px-4 py-3.5">Progress</th>
+                <th className="px-4 py-3.5">Last active</th>
+                <th className="px-4 py-3.5">Status</th>
+                <th className="px-4 py-3.5">Joined</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              {rows.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-4 py-16 text-center text-sm text-slate-500">
+                    {data?.students.length ? "No students match your filters." : "No students have enrolled yet."}
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {rows.map((s) => (
-                  <tr key={s._id}>
-                    <td className="px-4 py-3.5">
-                      <div className="flex items-center gap-3">
-                        <Avatar name={s.name} src={s.avatar} size={36} />
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">{s.name}</p>
-                          <p className="truncate text-xs text-slate-500">{s.email}</p>
-                        </div>
+              )}
+              {rows.map((s) => (
+                <tr key={s._id}>
+                  <td className="px-4 py-3.5">
+                    <div className="flex items-center gap-3">
+                      <Avatar name={s.name} src={s.avatar} size={36} />
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">{s.name}</p>
+                        <p className="truncate text-[13px] leading-4 text-slate-500">{s.email}</p>
                       </div>
-                    </td>
-                    <td className="px-4 py-3.5 text-sm text-slate-700 dark:text-slate-200" title={s.courseTitles.join(", ")}>
-                      {s.courses}
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <div className="flex items-center gap-2">
-                        <div className="h-1.5 w-20 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                          <div
-                            className={`h-full rounded-full ${s.progress >= 100 ? "bg-green-500" : "bg-teal-600"}`}
-                            style={{ width: `${s.progress}%` }}
-                          />
-                        </div>
-                        <span className="w-10 text-right text-[13px] font-medium text-slate-600 dark:text-slate-300">
-                          {s.progress}%
-                        </span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3.5 text-sm text-slate-700 dark:text-slate-200" title={s.courseTitles.join(", ")}>
+                    {s.courses}
+                  </td>
+                  <td className="px-4 py-3.5">
+                    <div className="flex items-center gap-2">
+                      <div className="h-1.5 w-20 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                        <div
+                          className={`h-full rounded-full ${s.progress >= 100 ? "bg-green-500" : "bg-teal-600"}`}
+                          style={{ width: `${s.progress}%` }}
+                        />
                       </div>
-                    </td>
-                    <td className="px-4 py-3.5 text-sm text-slate-500">{lastSeen(s.lastActive)}</td>
-                    <td className="px-4 py-3.5">
-                      <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${STATUS[s.status].cls}`}>
-                        {STATUS[s.status].label}
+                      <span className="w-10 text-right text-[13px] font-medium text-slate-600 dark:text-slate-300">
+                        {s.progress}%
                       </span>
-                    </td>
-                    <td className="px-4 py-3.5 text-sm text-slate-500">{joinedDate(s.joined)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3.5 text-[12.5px] text-slate-500">{lastSeen(s.lastActive)}</td>
+                  <td className="px-4 py-3.5">
+                    <span
+                      className={`inline-block rounded-full px-2.5 py-0.5 text-[13px] font-medium leading-[18px] ${STATUS[s.status].cls}`}
+                    >
+                      {STATUS[s.status].label}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3.5 text-[12.5px] text-slate-500">{joinedDate(s.joined)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </PageState>
     </div>

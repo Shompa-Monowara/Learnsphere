@@ -1,6 +1,6 @@
 import { useState } from "react"
 import type { FormEvent } from "react"
-import { Link, useLocation, useNavigate } from "react-router-dom"
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom"
 import { AlertCircle, Eye, EyeOff, Loader2, Lock, LogIn, Mail } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -9,13 +9,15 @@ import { Label } from "@/components/ui/label"
 import { ROLE_HOME } from "@/config/constants"
 
 import { useAuth } from "@/stores/auth-context"
-import { GithubIcon, GoogleIcon } from "./SocialIcons"
+import { OAUTH_ERRORS } from "../oauth"
+import SocialButtons from "./SocialButtons"
 import { getErrorMessage } from "@/services/api"
 
 export default function LoginForm() {
   const { login } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+  const [searchParams] = useSearchParams()
   const from = (location.state as { from?: string } | null)?.from
 
   const [email, setEmail] = useState("")
@@ -23,7 +25,7 @@ export default function LoginForm() {
   const [remember, setRemember] = useState(true)
   const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
-  const [serverError, setServerError] = useState("")
+  const [serverError, setServerError] = useState(() => OAUTH_ERRORS[searchParams.get("error") ?? ""] ?? "")
   const [submitting, setSubmitting] = useState(false)
 
   const validate = () => {
@@ -139,14 +141,7 @@ export default function LoginForm() {
         <span className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <Button type="button" variant="outline" className="h-12 rounded-xl">
-          <GoogleIcon /> Google
-        </Button>
-        <Button type="button" variant="outline" className="h-12 rounded-xl">
-          <GithubIcon /> GitHub
-        </Button>
-      </div>
+      <SocialButtons mode="login" />
 
       <p className="text-center text-sm text-slate-600 dark:text-slate-400">
         Don&apos;t have an account?{" "}

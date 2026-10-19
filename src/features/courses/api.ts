@@ -54,6 +54,8 @@ export interface ReviewItem {
   rating: number
   comment: string
   reply?: string
+  helpful?: number
+  markedByMe?: boolean
   createdAt: string
   student?: { _id: string; name: string; avatar?: string } | null
 }
@@ -146,6 +148,11 @@ export async function fetchReviews(id: string): Promise<ReviewData> {
 
 export async function submitReview(id: string, rating: number, comment: string) {
   await api.post(`/courses/${id}/reviews`, { rating, comment })
+}
+
+export async function toggleHelpful(id: string): Promise<{ helpful: number; markedByMe: boolean }> {
+  const res = await api.post(`/reviews/${id}/helpful`)
+  return { helpful: res.data.helpful, markedByMe: res.data.markedByMe }
 }
 
 export async function enrollInCourse(id: string) {

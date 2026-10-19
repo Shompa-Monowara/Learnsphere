@@ -10,6 +10,7 @@ import { initials } from "../data"
 import { submitReview } from "../api"
 import type { CourseDetail, ReviewData } from "../api"
 import { buildIncludes } from "../includes"
+import { HelpfulButton } from "./HelpfulButton"
 
 const TABS = [
   { id: "overview", label: "Overview", icon: FileText },
@@ -255,6 +256,15 @@ function Reviews({ course, data, enrolled, onReviewed }: { course: CourseDetail;
                   <b className="text-slate-900 dark:text-white">Instructor reply:</b> {r.reply}
                 </p>
               )}
+              <div className="mt-3">
+                <HelpfulButton
+                  key={`${r._id}-${r.helpful ?? 0}-${r.markedByMe ? 1 : 0}`}
+                  reviewId={r._id}
+                  authorId={r.student?._id}
+                  helpful={r.helpful ?? 0}
+                  markedByMe={!!r.markedByMe}
+                />
+              </div>
             </li>
           ))}
         </ul>

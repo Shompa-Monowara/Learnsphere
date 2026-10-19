@@ -94,6 +94,7 @@ export interface ReviewItem {
   rating: number
   comment: string
   reply: string
+  helpful: number
   createdAt: string
 }
 

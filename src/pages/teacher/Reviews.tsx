@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Star } from "lucide-react"
+import { Star, ThumbsUp } from "lucide-react"
 import Avatar from "@/features/student/components/Avatar"
 import PageHeader from "@/features/student/components/PageHeader"
 import PageState from "@/features/student/components/PageState"
@@ -17,9 +17,9 @@ const BAR: Record<number, string> = {
   1: "bg-red-500",
 }
 
-function Stars({ value, size = 14 }: { value: number; size?: number }) {
+function Stars({ value, size = 12 }: { value: number; size?: number }) {
   return (
-    <div className="flex gap-0.5">
+    <div className="flex gap-[2.5px]">
       {Array.from({ length: 5 }).map((_, i) => (
         <Star key={i} size={size} className={i < Math.round(value) ? "fill-orange-500 text-orange-500" : "text-slate-300"} />
       ))}
@@ -69,29 +69,29 @@ export default function Reviews() {
 
       <PageState loading={loading} error={data ? "" : error} onRetry={() => void reload()}>
         {data && (
-          <div className="grid items-start gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
+          <div className="grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
             {/* Summary */}
             <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
               <div className="flex flex-col items-center text-center">
-                <p className="text-6xl font-extrabold text-slate-900 dark:text-white">
+                <p className="text-[50px] font-extrabold leading-none text-slate-900 dark:text-white">
                   {data.summary.total ? data.summary.average.toFixed(1) : "–"}
                 </p>
-                <div className="mt-2">
-                  <Stars value={data.summary.average} size={18} />
+                <div className="mt-3">
+                  <Stars value={data.summary.average} size={16} />
                 </div>
-                <p className="mt-2 text-sm text-slate-500">
+                <p className="mt-2.5 text-[14.5px] text-slate-500">
                   Based on {data.summary.total.toLocaleString("en-US")} review{data.summary.total === 1 ? "" : "s"}
                 </p>
               </div>
 
-              <div className="mt-6 space-y-3 border-t border-slate-100 pt-6 dark:border-slate-800">
+              <div className="mt-6 space-y-3.5 border-t border-slate-100 pt-5 dark:border-slate-800">
                 {data.summary.distribution.map((d) => (
                   <div key={d.star} className="flex items-center gap-3 text-xs">
-                    <span className="w-6 text-slate-500">{d.star}★</span>
+                    <span className="w-12 text-slate-500">{d.star}★</span>
                     <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                       <div className={`h-full rounded-full ${BAR[d.star]}`} style={{ width: `${d.percent}%` }} />
                     </div>
-                    <span className="w-9 text-right font-medium text-slate-600 dark:text-slate-300">{d.percent}%</span>
+                    <span className="w-10 text-right font-medium text-slate-600 dark:text-slate-300">{d.percent}%</span>
                   </div>
                 ))}
               </div>
@@ -113,8 +113,8 @@ export default function Reviews() {
                   <div className="flex items-start gap-3">
                     <Avatar name={r.studentName} src={r.studentAvatar} size={44} />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate font-semibold text-slate-900 dark:text-white">{r.studentName}</p>
-                      <p className="truncate text-xs text-slate-500">
+                      <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">{r.studentName}</p>
+                      <p className="truncate text-[12.5px] text-slate-500">
                         {r.courseTitle} · {timeAgo(r.createdAt)}
                       </p>
                     </div>
@@ -122,13 +122,13 @@ export default function Reviews() {
                   </div>
 
                   {r.comment && (
-                    <p className="mt-3 text-sm leading-relaxed text-slate-700 dark:text-slate-300">{r.comment}</p>
+                    <p className="mt-3 text-[14.7px] leading-relaxed text-slate-700 dark:text-slate-300">{r.comment}</p>
                   )}
 
                   {r.reply && openId !== r._id && (
-                    <div className="mt-4 rounded-lg border-l-4 border-teal-500 bg-slate-50 px-4 py-3 dark:bg-slate-800/60">
+                    <div className="mt-3 rounded-lg border-l-2 border-teal-500 bg-slate-50 py-3 pl-3.5 pr-4 dark:bg-slate-800/60">
                       <p className="text-xs font-semibold text-teal-700 dark:text-teal-400">Your reply</p>
-                      <p className="mt-1 text-sm text-slate-700 dark:text-slate-200">{r.reply}</p>
+                      <p className="mt-1 text-[14.7px] text-slate-700 dark:text-slate-200">{r.reply}</p>
                     </div>
                   )}
 
@@ -153,11 +153,16 @@ export default function Reviews() {
                       </div>
                     </div>
                   ) : (
-                    <div className="mt-4 border-t border-slate-100 pt-3 dark:border-slate-800">
+                    <div className="mt-3 flex items-center gap-4 border-t border-slate-100 pt-3 text-xs dark:border-slate-800">
+                      {(r.helpful ?? 0) > 0 && (
+                        <span className="inline-flex items-center gap-1 text-slate-500">
+                          <ThumbsUp size={12} /> {r.helpful.toLocaleString("en-US")} found helpful
+                        </span>
+                      )}
                       <button
                         type="button"
                         onClick={() => startReply(r)}
-                        className="text-sm font-semibold text-teal-600 hover:text-teal-700"
+                        className="font-semibold text-teal-600 hover:text-teal-700"
                       >
                         {r.reply ? "Edit reply" : "Reply"}
                       </button>

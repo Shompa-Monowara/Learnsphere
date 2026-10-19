@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react"
 import type { FormEvent } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate, useSearchParams } from "react-router-dom"
 import {
   AlertCircle,
   BookOpen,
@@ -20,7 +20,9 @@ import { Label } from "@/components/ui/label"
 import { ROLE_HOME } from "@/config/constants"
 import { getErrorMessage } from "@/services/api"
 import { useAuth } from "@/stores/auth-context"
-import { GithubIcon, GoogleIcon } from "./SocialIcons"
+import { OAUTH_ERRORS } from "../oauth"
+import OtpStep from "./OtpStep"
+import SocialButtons from "./SocialButtons"
 
 type SignupRole = "student" | "teacher"
 
@@ -55,8 +57,12 @@ function getStrength(password: string) {
 }
 
 export default function RegisterForm() {
-  const { register } = useAuth()
+  const { requestRegisterOtp, resendRegisterOtp, completeRegister } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+
+  const [step, setStep] = useState<"form" | "otp">("form")
+  const [resendAfter, setResendAfter] = useState(60)
 
   const [role, setRole] = useState<SignupRole>("student")
   const [name, setName] = useState("")
@@ -66,7 +72,7 @@ export default function RegisterForm() {
   const [terms, setTerms] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState<FormErrors>({})
-  const [serverError, setServerError] = useState("")
+  const [serverError, setServerError] = useState(() => OAUTH_ERRORS[searchParams.get("error") ?? ""] ?? "")
   const [submitting, setSubmitting] = useState(false)
 
   const strength = useMemo(() => getStrength(password), [password])
@@ -82,24 +88,37 @@ export default function RegisterForm() {
     return Object.keys(next).length === 0
   }
 
+  const payload = () => ({ name: name.trim(), email: email.trim(), password, role })
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setServerError("")
     if (!validate()) return
     setSubmitting(true)
     try {
-      const user = await register({
-        name: name.trim(),
-        email: email.trim(),
-        password,
-        role,
-      })
-      navigate(ROLE_HOME[user.role], { replace: true })
+      const sent = await requestRegisterOtp(payload())
+      setResendAfter(sent.resendAfterSeconds)
+      setStep("otp")
     } catch (err) {
       setServerError(getErrorMessage(err))
     } finally {
       setSubmitting(false)
     }
+  }
+
+  if (step === "otp") {
+    return (
+      <OtpStep
+        email={email.trim()}
+        initialCooldown={resendAfter}
+        onBack={() => setStep("form")}
+        onResend={async () => (await resendRegisterOtp(email.trim())).resendAfterSeconds}
+        onVerify={async (otp) => {
+          const user = await completeRegister({ ...payload(), otp })
+          navigate(ROLE_HOME[user.role], { replace: true })
+        }}
+      />
+    )
   }
 
   const inputClass = "h-12 rounded-xl pl-10"
@@ -265,7 +284,7 @@ export default function RegisterForm() {
         className="h-12 w-full rounded-xl bg-teal-600 text-base font-semibold text-white hover:bg-teal-700"
       >
         {submitting ? <Loader2 className="animate-spin" size={18} /> : <UserPlus size={18} />}
-        {submitting ? "Creating account..." : "Create account"}
+        {submitting ? "Sending code..." : "Create account"}
       </Button>
 
       <div className="flex items-center gap-4 text-xs font-medium uppercase tracking-wide text-slate-400">
@@ -274,14 +293,7 @@ export default function RegisterForm() {
         <span className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <Button type="button" variant="outline" className="h-12 rounded-xl">
-          <GoogleIcon /> Google
-        </Button>
-        <Button type="button" variant="outline" className="h-12 rounded-xl">
-          <GithubIcon /> GitHub
-        </Button>
-      </div>
+      <SocialButtons mode="register" role={role} />
 
       <p className="text-center text-sm text-slate-600 dark:text-slate-400">
         Already have an account?{" "}
