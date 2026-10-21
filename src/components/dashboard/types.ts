@@ -8,7 +8,7 @@ export interface NavItem {
   badgeKey?: string
 }
 
-export type Accent = "teal" | "orange"
+export type Accent = "teal" | "orange" | "dark"
 
 export interface Promo {
   title: string

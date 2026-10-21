@@ -8,7 +8,7 @@ import Register from "@/pages/auth/Register"
 import CourseDetails from "@/pages/public/CourseDetails"
 import Courses from "@/pages/public/Courses"
 import Home from "@/pages/public/Home"
-import DashboardPlaceholder from "@/pages/shared/DashboardPlaceholder"
+import Pricing from "@/pages/public/Pricing"
 import Assignments from "@/pages/student/Assignments"
 import Certificates from "@/pages/student/Certificates"
 import ComingSoon from "@/pages/student/ComingSoon"
@@ -26,9 +26,22 @@ import TeacherAssignments from "@/pages/teacher/Assignments"
 import TeacherBuilder from "@/pages/teacher/CourseBuilder"
 import TeacherCourses from "@/pages/teacher/MyCourses"
 import TeacherEarnings from "@/pages/teacher/Earnings"
+import TeacherMessages from "@/pages/teacher/Messages"
+import TeacherNotifications from "@/pages/teacher/Notifications"
 import TeacherOverview from "@/pages/teacher/Overview"
 import TeacherQuizzes from "@/pages/teacher/Quizzes"
 import TeacherReviews from "@/pages/teacher/Reviews"
+import TeacherSettings from "@/pages/teacher/Settings"
+import AdminLayout from "@/layouts/AdminLayout"
+import AdminNotifications from "@/pages/admin/Notifications"
+import AdminCategories from "@/pages/admin/Categories"
+import AdminPayments from "@/pages/admin/Payments"
+import AdminReports from "@/pages/admin/Reports"
+import AdminCourses from "@/pages/admin/Courses"
+import AdminSettings from "@/pages/admin/Settings"
+import AdminSiteSettings from "@/pages/admin/SiteSettings"
+import AdminUsers from "@/pages/admin/Users"
+import AdminOverview from "@/pages/admin/Overview"
 import TeacherStudents from "@/pages/teacher/Students"
 import ProtectedRoute from "./ProtectedRoute"
 import OAuthCallback from "@/features/auth/OAuthCallback"
@@ -40,6 +53,7 @@ export default function AppRoutes() {
         <Route path="/" element={<Home />} />
         <Route path="/courses" element={<Courses />} />
         <Route path="/courses/:id" element={<CourseDetails />} />
+        <Route path="/pricing" element={<Pricing />} />
       </Route>
 
       <Route path="/auth/callback" element={<OAuthCallback />} />
@@ -79,15 +93,25 @@ export default function AppRoutes() {
           <Route path="students" element={<TeacherStudents />} />
           <Route path="reviews" element={<TeacherReviews />} />
           <Route path="earnings" element={<TeacherEarnings />} />
-          <Route path="messages" element={<Messages />} />
-          <Route path="notifications" element={<Notifications />} />
-          <Route path="settings" element={<Settings />} />
+          <Route path="messages" element={<TeacherMessages />} />
+          <Route path="notifications" element={<TeacherNotifications />} />
+          <Route path="settings" element={<TeacherSettings />} />
           <Route path="*" element={<ComingSoon />} />
         </Route>
       </Route>
 
       <Route element={<ProtectedRoute roles={["admin"]} />}>
-        <Route path="/admin" element={<DashboardPlaceholder />} />
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminOverview />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="courses" element={<AdminCourses />} />
+          <Route path="categories" element={<AdminCategories />} />
+          <Route path="reports" element={<AdminReports />} />
+          <Route path="payments" element={<AdminPayments />} />
+          <Route path="notifications" element={<AdminNotifications />} />
+          <Route path="settings" element={<AdminSettings />} />
+          <Route path="site-settings" element={<AdminSiteSettings />} />
+        </Route>
       </Route>
     </Routes>
   )

@@ -4,6 +4,27 @@
 @import "@fontsource-variable/geist";
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Site settings er Primary color ei ekta variable theke ashe.
+   Tailwind er teal-* shade gulo ei color theke auto toiri hoy,
+   tai puro app er teal-600, teal-500, teal-50 ... shob ek sathe change hoy. */
+:root {
+  --brand: #0d9488;
+}
+
+@theme {
+  --color-teal-50: color-mix(in oklab, var(--brand) 6%, white);
+  --color-teal-100: color-mix(in oklab, var(--brand) 14%, white);
+  --color-teal-200: color-mix(in oklab, var(--brand) 28%, white);
+  --color-teal-300: color-mix(in oklab, var(--brand) 45%, white);
+  --color-teal-400: color-mix(in oklab, var(--brand) 70%, white);
+  --color-teal-500: color-mix(in oklab, var(--brand) 85%, white);
+  --color-teal-600: var(--brand);
+  --color-teal-700: color-mix(in oklab, var(--brand) 82%, black);
+  --color-teal-800: color-mix(in oklab, var(--brand) 66%, black);
+  --color-teal-900: color-mix(in oklab, var(--brand) 52%, black);
+  --color-teal-950: color-mix(in oklab, var(--brand) 32%, black);
+}
+
 @theme inline {
     --font-heading: var(--font-sans);
     --font-sans: 'Geist Variable', sans-serif;

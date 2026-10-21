@@ -1,8 +1,11 @@
-import { ArrowLeft, Search, Send } from "lucide-react"
+import { ArrowLeft, Search } from "lucide-react"
 import { useCallback, useEffect, useRef, useState } from "react"
 import Avatar from "@/features/student/components/Avatar"
-import type { ChatMessage, Conversation } from "@/features/student/portal-types"
+import ChatComposer from "@/features/student/components/ChatComposer"
+import MessageAttachment from "@/features/student/components/MessageAttachment"
 import PageHeader from "@/features/student/components/PageHeader"
+import { sendChatMessage } from "@/features/student/chat"
+import type { ChatMessage, Conversation } from "@/features/student/portal-types"
 import { useStudent } from "@/features/student/student-context"
 import { CARD } from "@/features/student/ui"
 import { formatClock, timeAgo } from "@/features/student/utils"
@@ -19,9 +22,11 @@ export default function Messages() {
   const [activeId, setActiveId] = useState<string | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [text, setText] = useState("")
+  const [file, setFile] = useState<File | null>(null)
   const [sending, setSending] = useState(false)
   const [query, setQuery] = useState("")
   const bottomRef = useRef<HTMLDivElement>(null)
+  const autoOpened = useRef(false)
 
   const loadConvs = useCallback(async () => {
     try {
@@ -45,12 +50,6 @@ export default function Messages() {
   }, [])
 
   useEffect(() => {
-    void loadConvs()
-    const t = setInterval(() => void loadConvs(), 10000)
-    return () => clearInterval(t)
-  }, [loadConvs])
-
-  useEffect(() => {
     if (!activeId) return
     const t = setInterval(() => void loadThread(activeId), 6000)
     return () => clearInterval(t)
@@ -60,22 +59,56 @@ export default function Messages() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages.length, activeId])
 
-  const open = async (id: string) => {
-    setMessages([])
-    setActiveId(id)
-    await loadThread(id)
-    await loadConvs()
-    void refresh()
-  }
+  const open = useCallback(
+    async (id: string) => {
+      setMessages([])
+      setFile(null)
+      setActiveId(id)
+      await loadThread(id)
+      await loadConvs()
+      void refresh()
+    },
+    [loadThread, loadConvs, refresh]
+  )
+
+  /* mount: first load + desktop e first conversation auto open + polling */
+  useEffect(() => {
+    let alive = true
+    api
+      .get<{ conversations: Conversation[] }>("/messages/conversations")
+      .then((res) => {
+        if (!alive) return
+        const list = res.data.conversations
+        setConvs(list)
+        setError("")
+        if (!autoOpened.current && list.length > 0 && window.matchMedia("(min-width: 768px)").matches) {
+          autoOpened.current = true
+          void open(list[0].user._id)
+        }
+      })
+      .catch((err) => {
+        if (alive) setError(getErrorMessage(err))
+      })
+      .finally(() => {
+        if (alive) setLoading(false)
+      })
+
+    const t = setInterval(() => void loadConvs(), 10000)
+    return () => {
+      alive = false
+      clearInterval(t)
+    }
+  }, [loadConvs, open])
 
   const send = async () => {
     const value = text.trim()
-    if (!value || !activeId || sending) return
+    if ((!value && !file) || !activeId || sending) return
     setSending(true)
     try {
-      const res = await api.post<{ message: ChatMessage }>(`/messages/${activeId}`, { text: value })
-      setMessages((prev) => [...prev, res.data.message])
+      const message = await sendChatMessage(activeId, value, file)
+      setMessages((prev) => [...prev, message])
       setText("")
+      setFile(null)
       void loadConvs()
     } catch (err) {
       setError(getErrorMessage(err))
@@ -178,7 +211,12 @@ export default function Messages() {
                           mine ? "bg-teal-600 text-white" : "border border-slate-100 bg-white dark:border-slate-700 dark:bg-slate-800"
                         )}
                       >
-                        <p className="whitespace-pre-wrap break-words text-sm">{m.text}</p>
+                        {m.attachment && (
+                          <div className={cn(m.text && "mb-2")}>
+                            <MessageAttachment attachment={m.attachment} mine={mine} />
+                          </div>
+                        )}
+                        {m.text && <p className="whitespace-pre-wrap break-words text-sm">{m.text}</p>}
                         <p className={cn("mt-1 text-[10px]", mine ? "text-teal-100" : "text-slate-400")}>{formatClock(m.createdAt)}</p>
                       </div>
                     </div>
@@ -187,29 +225,16 @@ export default function Messages() {
                 <div ref={bottomRef} />
               </div>
 
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  void send()
-                }}
-                className="flex items-center gap-3 border-t border-slate-100 p-4 dark:border-slate-800"
-              >
-                <input
-                  value={text}
-                  onChange={(e) => setText(e.target.value)}
-                  placeholder="Write a message..."
-                  maxLength={2000}
-                  className="h-11 flex-1 rounded-full border border-slate-200 bg-slate-50 px-5 text-sm outline-none focus:border-teal-500 dark:border-slate-700 dark:bg-slate-800"
-                />
-                <button
-                  type="submit"
-                  disabled={!text.trim() || sending}
-                  aria-label="Send"
-                  className="flex h-11 w-11 items-center justify-center rounded-full bg-teal-600 text-white transition-colors hover:bg-teal-700 disabled:opacity-50"
-                >
-                  <Send size={17} />
-                </button>
-              </form>
+              <ChatComposer
+                text={text}
+                onTextChange={setText}
+                file={file}
+                onFileChange={setFile}
+                onSend={() => void send()}
+                onError={setError}
+                sending={sending}
+                className="p-4"
+              />
             </>
           )}
         </div>

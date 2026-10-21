@@ -112,11 +112,19 @@ export interface Conversation {
   unread: number
 }
 
+export interface ChatAttachment {
+  url: string
+  name: string
+  kind: "image" | "pdf"
+  size: number
+}
+
 export interface ChatMessage {
   _id: string
   sender: string
   receiver: string
   text: string
+  attachment?: ChatAttachment
   createdAt: string
 }
 

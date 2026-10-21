@@ -22,6 +22,15 @@ const ACCENTS = {
     promoBtn: "text-orange-700",
     collapse: "hover:text-orange-600",
   },
+  dark: {
+    active: "bg-slate-900 shadow-md shadow-slate-900/25 dark:bg-slate-700 dark:shadow-none",
+    logo: "bg-slate-900 dark:bg-slate-700",
+    brand: "text-slate-900 dark:text-white",
+    label: "text-slate-600 dark:text-slate-400",
+    promo: "from-slate-900 via-slate-900 to-slate-800 dark:from-slate-800 dark:via-slate-800 dark:to-slate-700",
+    promoBtn: "text-slate-900",
+    collapse: "hover:text-slate-900 dark:hover:text-white",
+  },
 }
 
 interface Props {

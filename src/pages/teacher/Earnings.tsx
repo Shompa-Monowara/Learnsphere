@@ -1,16 +1,21 @@
-import { useState } from "react"
-import { ArrowDown, ArrowUp, Landmark } from "lucide-react"
+import { useMemo, useState } from "react"
+import { ArrowDown, ArrowUp, ArrowUpDown, Landmark } from "lucide-react"
 import PageHeader from "@/features/student/components/PageHeader"
 import PageState from "@/features/student/components/PageState"
 import { BTN_PRIMARY } from "@/features/student/ui"
 import { formatDate } from "@/features/student/utils"
 import PayoutDialog from "@/features/teacher/components/PayoutDialog"
 import RevenueChart from "@/features/teacher/components/RevenueChart"
-import type { EarningsData } from "@/features/teacher/types"
+import type { EarningsData, PayoutRow } from "@/features/teacher/types"
 import { useLoad } from "@/features/teacher/useLoad"
 import { usd } from "@/features/teacher/utils"
 
 const BAR_COLORS = ["bg-teal-600", "bg-orange-500", "bg-slate-500", "bg-teal-600"]
+
+const SOURCE_COLORS = ["bg-teal-600", "bg-orange-500", "bg-sky-600", "bg-slate-500"]
+
+type SortKey = "reference" | "createdAt" | "amount"
+type EarningsWithSources = EarningsData & { sources?: { label: string; percent: number }[] }
 
 const STATUS: Record<string, string> = {
   paid: "bg-green-50 text-green-700",
@@ -41,8 +46,36 @@ function Card({ label, value, children }: { label: string; value: string; childr
 }
 
 export default function Earnings() {
-  const { data, loading, error, reload } = useLoad<EarningsData>("/teacher/earnings")
+  const { data, loading, error, reload } = useLoad<EarningsWithSources>("/teacher/earnings")
   const [dialog, setDialog] = useState(false)
+  const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({ key: "createdAt", dir: "desc" })
+
+  const payouts = useMemo(() => {
+    const list: PayoutRow[] = [...(data?.payouts ?? [])]
+    const { key, dir } = sort
+    list.sort((a, b) => {
+      const r =
+        key === "amount"
+          ? a.amount - b.amount
+          : key === "createdAt"
+            ? new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+            : a.reference.localeCompare(b.reference)
+      return dir === "asc" ? r : -r
+    })
+    return list
+  }, [data?.payouts, sort])
+
+  const toggleSort = (key: SortKey) =>
+    setSort((s) => (s.key === key ? { key, dir: s.dir === "asc" ? "desc" : "asc" } : { key, dir: "asc" }))
+
+  const sortIcon = (key: SortKey) =>
+    sort.key !== key ? (
+      <ArrowUpDown size={13} className="text-slate-300" />
+    ) : sort.dir === "asc" ? (
+      <ArrowUp size={13} className="text-teal-600" />
+    ) : (
+      <ArrowDown size={13} className="text-teal-600" />
+    )
 
   const maxCourse = Math.max(...(data?.topCourses.map((c) => c.revenue) ?? [1]), 1)
 
@@ -126,6 +159,28 @@ export default function Earnings() {
                     ))}
                   </div>
                 )}
+
+                {data.sources && data.sources.length > 0 && (
+                  <div className="mt-6 border-t border-slate-100 pt-6 dark:border-slate-800">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Revenue by source</h3>
+                    <div className="mt-4 space-y-3">
+                      {data.sources.map((s, i) => (
+                        <div key={s.label} className="flex items-center gap-3 text-xs">
+                          <span className="w-16 shrink-0 text-slate-600 dark:text-slate-300">{s.label}</span>
+                          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                            <div
+                              className={`h-full rounded-full ${SOURCE_COLORS[i % SOURCE_COLORS.length]}`}
+                              style={{ width: `${s.percent}%` }}
+                            />
+                          </div>
+                          <span className="w-9 shrink-0 text-right font-semibold text-slate-700 dark:text-slate-200">
+                            {s.percent}%
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </section>
             </div>
 
@@ -138,15 +193,29 @@ export default function Earnings() {
                   <table className="w-full min-w-[560px] text-left">
                     <thead>
                       <tr className="border-b border-slate-100 text-xs font-semibold text-slate-500 dark:border-slate-800">
-                        <th className="px-5 py-4">Reference</th>
-                        <th className="px-5 py-4">Date</th>
-                        <th className="px-5 py-4 text-right">Amount</th>
+                        {(
+                          [
+                            ["reference", "Reference", ""],
+                            ["createdAt", "Date", ""],
+                            ["amount", "Amount", "justify-end"],
+                          ] as const
+                        ).map(([key, label, align]) => (
+                          <th key={key} className={`px-5 py-4 ${align ? "text-right" : ""}`}>
+                            <button
+                              type="button"
+                              onClick={() => toggleSort(key)}
+                              className={`inline-flex items-center gap-1.5 font-semibold hover:text-slate-700 ${align}`}
+                            >
+                              {label} {sortIcon(key)}
+                            </button>
+                          </th>
+                        ))}
                         <th className="px-5 py-4">Method</th>
                         <th className="px-5 py-4 text-right">Status</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                      {data.payouts.map((p) => (
+                      {payouts.map((p) => (
                         <tr key={p._id}>
                           <td className="px-5 py-3.5 font-mono text-xs text-slate-600 dark:text-slate-300">{p.reference}</td>
                           <td className="px-5 py-3.5 text-sm text-slate-700 dark:text-slate-200">{formatDate(p.createdAt)}</td>

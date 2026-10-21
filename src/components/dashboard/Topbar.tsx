@@ -1,7 +1,7 @@
 import { Bell, ChevronDown, LogOut, Menu, Moon, Search, Sun } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { Link } from "react-router-dom"
-import { initials } from "@/features/student/utils"
+import Avatar from "@/features/student/components/Avatar"
 import { useAuth } from "@/stores/auth-context"
 import { useTheme } from "@/stores/theme-context"
 
@@ -59,9 +59,7 @@ export default function Topbar({ onMenu, unread, notificationsTo }: Props) {
             onClick={() => setOpen((v) => !v)}
             className="flex items-center gap-3 rounded-xl border border-slate-200 py-1.5 pl-1.5 pr-3 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
           >
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-teal-100 text-xs font-semibold text-teal-700">
-              {initials(user?.name)}
-            </span>
+            <Avatar name={user?.name ?? ""} src={user?.avatar} size={36} />
             <span className="hidden text-left sm:block">
               <span className="block text-sm font-semibold leading-tight text-slate-900 dark:text-white">
                 {user?.name}
