@@ -5,7 +5,7 @@ import {
   AlertCircle, CheckCircle2, Globe, Heart, Info, Loader2, PlayCircle, RefreshCw, ShoppingCart, Star, Users, Zap,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { enrollInCourse, fetchCourse, fetchReviews } from "@/features/courses/api"
+import { enrollInCourse, fetchCourse, fetchReviews, startCheckout } from "@/features/courses/api"
 import type { CourseDetail, ReviewData } from "@/features/courses/api"
 import CourseTabs from "@/features/courses/components/CourseTabs"
 import CourseThumb from "@/features/courses/components/CourseThumb"
@@ -67,6 +67,11 @@ export default function CourseDetails() {
     setEnrolling(true)
     setEnrollError("")
     try {
+      if (course.price > 0) {
+        /* Paid course: Stripe checkout page e pathai */
+        window.location.href = await startCheckout(course.id)
+        return
+      }
       await enrollInCourse(course.id)
       setEnrolled(true)
       setReload((n) => n + 1)
@@ -225,8 +230,11 @@ export default function CourseDetails() {
                 className="mt-5 h-12 w-full rounded-xl bg-teal-600 text-base font-semibold text-white hover:bg-teal-700"
               >
                 {enrolling ? <Loader2 size={18} className="animate-spin" /> : <ShoppingCart size={18} />}
-                {enrolling ? "Enrolling..." : course.price === 0 ? "Enroll for free" : "Enroll now"}
+                {enrolling ? (course.price > 0 ? "Redirecting to checkout..." : "Enrolling...") : course.price === 0 ? "Enroll for free" : "Buy now"}
               </Button>
+            )}
+            {new URLSearchParams(location.search).get("payment") === "cancelled" && !enrolled && (
+              <p className="mt-2 text-sm text-amber-600">Payment was cancelled. You have not been charged.</p>
             )}
             {enrollError && <p role="alert" className="mt-2 text-sm text-red-600">{enrollError}</p>}
 

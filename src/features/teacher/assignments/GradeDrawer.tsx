@@ -41,11 +41,14 @@ export default function GradeDrawer({ sub, onClose, onSaved }: Props) {
 
   const meta = [
     fmtDateTime(sub.submittedAt),
+    sub.isLate ? "Late" : "",
     sub.progress !== null ? `student progress ${sub.progress}%` : "",
   ]
     .filter(Boolean)
     .join(" · ");
 
+  const hasFile = Boolean(sub.fileUrl);
+  const hasText = Boolean(sub.text);
   const FileIcon = isArchive(sub.fileName) ? FileArchive : FileText;
 
   return (
@@ -76,28 +79,40 @@ export default function GradeDrawer({ sub, onClose, onSaved }: Props) {
 
         {/* Body */}
         <div className="flex-1 space-y-5 overflow-y-auto px-5 py-5">
-          <div className="flex items-center gap-3 rounded-2xl border border-slate-100 p-4">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-600">
-              <FileIcon className="h-5 w-5" />
+          {/* File card: file thakle, ba kichui na thakle */}
+          {(hasFile || !hasText) && (
+            <div className="flex items-center gap-3 rounded-2xl border border-slate-100 p-4">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-600">
+                <FileIcon className="h-5 w-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-bold text-slate-900">{sub.fileName || "No file attached"}</p>
+                <p className="text-xs text-slate-500">{meta}</p>
+              </div>
+              {hasFile && (
+                <a
+                  href={sub.fileUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 px-3.5 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+                >
+                  <Eye className="h-4 w-4" /> View
+                </a>
+              )}
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate font-bold text-slate-900">{sub.fileName || "No file attached"}</p>
-              <p className="text-xs text-slate-500">{meta}</p>
-            </div>
-            {sub.fileUrl && (
-              <a
-                href={sub.fileUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 px-3.5 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
-              >
-                <Eye className="h-4 w-4" /> View
-              </a>
-            )}
-          </div>
+          )}
 
-          {sub.text && (
-            <p className="whitespace-pre-wrap rounded-xl bg-slate-50 p-4 text-sm text-slate-700">{sub.text}</p>
+          {/* Written answer */}
+          {hasText && (
+            <div>
+              <div className="mb-1.5 flex items-center justify-between">
+                <label className="text-sm font-medium text-slate-900">Written answer</label>
+                {!hasFile && <span className="text-xs text-slate-500">{meta}</span>}
+              </div>
+              <div className="max-h-80 overflow-y-auto whitespace-pre-wrap rounded-xl bg-slate-50 p-4 text-sm leading-relaxed text-slate-700">
+                {sub.text}
+              </div>
+            </div>
           )}
 
           <div>

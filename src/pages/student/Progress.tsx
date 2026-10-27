@@ -30,11 +30,14 @@ function TrendChart({ points }: { points: ProgressData["quizTrend"] }) {
     return <p className="py-20 text-center text-sm text-slate-500">No quiz attempts in the last 7 weeks.</p>
   }
 
+  /* Score nai emon week e ager week er value dhore line ta continuous rakhi */
+  const filled: { label: string; value: number; real: boolean }[] = []
   let last = known[0].score as number
-  const filled = points.map((p) => {
+  for (const p of points) {
     if (p.score !== null) last = p.score
-    return { label: p.label, value: last, real: p.score !== null }
-  })
+    filled.push({ label: p.label, value: last, real: p.score !== null })
+  }
+
   const n = filled.length
   const xs = filled.map((_, i) => (i / (n - 1)) * 100)
   const ys = filled.map((p) => 100 - p.value)

@@ -1,6 +1,8 @@
+import { isAxiosError } from "axios"
 import { Star, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
+import { startCheckout } from "@/features/courses/api"
 import EmptyState from "@/features/student/components/EmptyState"
 import Notice from "@/features/student/components/Notice"
 import PageHeader from "@/features/student/components/PageHeader"
@@ -39,6 +41,17 @@ export default function Wishlist() {
       await api.delete(`/wishlist/${id}`).catch(() => null)
       navigate("/student/courses")
     } catch (err) {
+      /* 402 = paid course, tai Stripe checkout e pathai */
+      if (isAxiosError(err) && err.response?.status === 402) {
+        try {
+          window.location.href = await startCheckout(id)
+          return
+        } catch (e) {
+          setActionError(getErrorMessage(e))
+          setBusy("")
+          return
+        }
+      }
       setActionError(getErrorMessage(err))
       setBusy("")
     }

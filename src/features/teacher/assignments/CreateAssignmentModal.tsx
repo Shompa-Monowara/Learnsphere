@@ -1,9 +1,18 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Loader2, Paperclip, X } from "lucide-react";
 import { api, getErrorMessage } from "@/services/api";
+import { cn } from "@/lib/utils";
 import { BTN_OUTLINE, BTN_PRIMARY } from "@/features/student/ui";
 import { FIELD, LABEL } from "@/features/teacher/builder/ui";
-import { fileNameFromUrl, toDateInput, type AssignmentItem, type CourseOption } from "./types";
+import {
+  SUBMISSION_TYPE_OPTIONS,
+  fileNameFromUrl,
+  toDateInput,
+  type AssignmentItem,
+  type CourseOption,
+  type SubmissionType,
+} from "./types";
 
 /* Upload route jodi alada hoy, shudhu ei line ta bodlao */
 const UPLOAD_PATH = "/upload";
@@ -22,6 +31,30 @@ interface Attachment {
   url: string;
 }
 
+interface CheckProps {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  title: string;
+  hint: string;
+}
+
+function Check({ checked, onChange, title, hint }: CheckProps) {
+  return (
+    <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-100 px-3 py-2.5 hover:bg-slate-50">
+      <input
+        type="checkbox"
+        className="mt-0.5 h-4 w-4 accent-teal-600"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+      />
+      <span>
+        <span className="block text-sm font-medium text-slate-900">{title}</span>
+        <span className="block text-xs text-slate-500">{hint}</span>
+      </span>
+    </label>
+  );
+}
+
 export default function CreateAssignmentModal({ courses, initial, onClose, onSaved }: Props) {
   const editing = Boolean(initial);
 
@@ -33,17 +66,31 @@ export default function CreateAssignmentModal({ courses, initial, onClose, onSav
   const [files, setFiles] = useState<Attachment[]>(
     (initial?.attachments ?? []).map((url) => ({ name: fileNameFromUrl(url), url })),
   );
+
+  const [submissionType, setSubmissionType] = useState<SubmissionType>(initial?.submissionType ?? "file");
+  const [isPublished, setIsPublished] = useState(initial?.isPublished ?? true);
+  const [allowLate, setAllowLate] = useState(initial?.allowLate ?? true);
+  const [allowResubmission, setAllowResubmission] = useState(initial?.allowResubmission ?? true);
+  const [fileTypes, setFileTypes] = useState((initial?.allowedFileTypes ?? []).join(", "));
+  const [maxSize, setMaxSize] = useState(String(initial?.maxFileSizeMB ?? 50));
+
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
   const [error, setError] = useState("");
 
+  /* Student submit korar por type bodlano jabe na (backend o block kore) */
+  const lockedType = editing && (initial?.total ?? 0) > 0;
+  const needsFile = submissionType !== "text";
+
   const marks = Number(totalMarks);
+  const size = Number(maxSize);
   const errs = {
     title: title.trim().length < 3 ? "Enter at least 3 characters" : "",
     course: courseId ? "" : "Select a course",
     deadline: deadline ? "" : "Pick a deadline",
     marks: Number.isFinite(marks) && marks >= 1 && marks <= 1000 ? "" : "1 – 1000",
+    size: !needsFile || (Number.isFinite(size) && size >= 1 && size <= 100) ? "" : "1 – 100 MB",
   };
   const invalid = Object.values(errs).some(Boolean);
 
@@ -73,6 +120,12 @@ export default function CreateAssignmentModal({ courses, initial, onClose, onSav
     setSaving(true);
     setError("");
     try {
+      const allowedFileTypes = needsFile
+        ? fileTypes
+            .split(",")
+            .map((s) => s.trim().replace(/^\./, "").toLowerCase())
+            .filter(Boolean)
+        : [];
       const body = {
         courseId,
         title: title.trim(),
@@ -80,6 +133,12 @@ export default function CreateAssignmentModal({ courses, initial, onClose, onSav
         deadline,
         totalMarks: marks,
         attachments: files,
+        submissionType,
+        isPublished,
+        allowLate,
+        allowResubmission,
+        allowedFileTypes,
+        maxFileSizeMB: needsFile ? size : 50,
       };
       if (initial) await api.put(`/teacher/assignments/${initial.id}`, body);
       else await api.post("/teacher/assignments", body);
@@ -92,6 +151,28 @@ export default function CreateAssignmentModal({ courses, initial, onClose, onSav
 
   const ring = (msg: string) => (showErrors && msg ? INVALID : "");
 
+  /* Teacher er kono course nai: form na dekhiye age course banate bolo */
+  if (courses.length === 0 && !editing) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm">
+        <div className="w-full max-w-md rounded-2xl bg-white p-6 text-center shadow-2xl">
+          <h2 className="text-lg font-bold text-slate-900">Create a course first</h2>
+          <p className="mt-2 text-sm text-slate-600">
+            Assignments belong to a course. Build your first course, then come back to add assignments.
+          </p>
+          <div className="mt-5 flex justify-center gap-3">
+            <button onClick={onClose} className={BTN_OUTLINE}>
+              Close
+            </button>
+            <Link to="/teacher/builder" className={BTN_PRIMARY}>
+              Go to Course Builder
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm">
       <div className="max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-white shadow-2xl">
@@ -100,7 +181,9 @@ export default function CreateAssignmentModal({ courses, initial, onClose, onSav
             <h2 className="text-lg font-bold text-slate-900">
               {editing ? "Edit assignment" : "Create assignment"}
             </h2>
-            <p className="mt-1 text-sm text-slate-500">Set the brief, deadline, and total marks.</p>
+            <p className="mt-1 text-sm text-slate-500">
+              Set the brief, how students submit, deadline, and total marks.
+            </p>
           </div>
           <button
             onClick={onClose}
@@ -131,7 +214,6 @@ export default function CreateAssignmentModal({ courses, initial, onClose, onSav
               disabled={editing}
               onChange={(e) => setCourseId(e.target.value)}
             >
-              {courses.length === 0 && <option value="">No courses yet</option>}
               {courses.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.title}
@@ -151,6 +233,65 @@ export default function CreateAssignmentModal({ courses, initial, onClose, onSav
               onChange={(e) => setInstructions(e.target.value)}
             />
           </div>
+
+          {/* Submission type */}
+          <div>
+            <label className={LABEL}>How will students submit?</label>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+              {SUBMISSION_TYPE_OPTIONS.map((o) => {
+                const active = submissionType === o.value;
+                return (
+                  <button
+                    type="button"
+                    key={o.value}
+                    disabled={lockedType}
+                    onClick={() => setSubmissionType(o.value)}
+                    className={cn(
+                      "rounded-xl border px-3 py-2.5 text-left transition disabled:cursor-not-allowed disabled:opacity-60",
+                      active
+                        ? "border-teal-500 bg-teal-50 ring-1 ring-teal-500/30"
+                        : "border-slate-200 hover:bg-slate-50",
+                    )}
+                  >
+                    <p className="text-sm font-semibold text-slate-900">{o.label}</p>
+                    <p className="mt-0.5 text-xs text-slate-500">{o.hint}</p>
+                  </button>
+                );
+              })}
+            </div>
+            {lockedType && (
+              <p className="mt-1.5 text-xs text-slate-500">
+                Locked because students have already submitted work.
+              </p>
+            )}
+          </div>
+
+          {/* File rules (written-only hole lagbe na) */}
+          {needsFile && (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-[1fr_140px]">
+              <div>
+                <label className={LABEL}>Allowed file types</label>
+                <input
+                  className={FIELD}
+                  placeholder="pdf, zip, docx  (leave empty for any)"
+                  value={fileTypes}
+                  onChange={(e) => setFileTypes(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className={LABEL}>Max size (MB)</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={100}
+                  className={`${FIELD} ${ring(errs.size)}`}
+                  value={maxSize}
+                  onChange={(e) => setMaxSize(e.target.value)}
+                />
+                {showErrors && errs.size && <p className="mt-1 text-xs text-red-500">{errs.size}</p>}
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>
@@ -222,6 +363,28 @@ export default function CreateAssignmentModal({ courses, initial, onClose, onSav
             </ul>
           )}
 
+          {/* Policies */}
+          <div className="space-y-2">
+            <Check
+              checked={allowLate}
+              onChange={setAllowLate}
+              title="Accept late submissions"
+              hint="Late work is flagged for you. Turn off to close submissions at the deadline."
+            />
+            <Check
+              checked={allowResubmission}
+              onChange={setAllowResubmission}
+              title="Allow resubmission"
+              hint="Students can replace their work until you grade it."
+            />
+            <Check
+              checked={isPublished}
+              onChange={setIsPublished}
+              title="Publish to students"
+              hint="Enrolled students are notified. Leave off to save as a draft."
+            />
+          </div>
+
           {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
         </div>
 
@@ -230,7 +393,13 @@ export default function CreateAssignmentModal({ courses, initial, onClose, onSav
             Cancel
           </button>
           <button onClick={() => void submit()} className={BTN_PRIMARY} disabled={saving || uploading}>
-            {saving ? "Saving…" : editing ? "Save changes" : "Create assignment"}
+            {saving
+              ? "Saving…"
+              : editing
+                ? "Save changes"
+                : isPublished
+                  ? "Create assignment"
+                  : "Save as draft"}
           </button>
         </div>
       </div>

@@ -158,3 +158,15 @@ export async function toggleHelpful(id: string): Promise<{ helpful: number; mark
 export async function enrollInCourse(id: string) {
   await api.post(`/enrollments/${id}`)
 }
+
+/* Paid course: Stripe checkout page er URL ane */
+export async function startCheckout(id: string): Promise<string> {
+  const res = await api.post(`/payments/checkout/${id}`)
+  return res.data.url as string
+}
+
+/* Payment shesh hole Stripe session verify kore enroll kore */
+export async function confirmPayment(sessionId: string): Promise<{ courseId: string; courseTitle: string }> {
+  const res = await api.post("/payments/confirm", { sessionId })
+  return { courseId: res.data.courseId, courseTitle: res.data.courseTitle }
+}

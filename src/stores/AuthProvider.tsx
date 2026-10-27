@@ -3,7 +3,7 @@ import type { ReactNode } from "react"
 import { api } from "@/services/api"
 import { clearToken, getToken, setToken } from "@/services/token"
 import { AuthContext } from "./auth-context"
-import type { CompleteRegisterPayload, OtpSent, RegisterPayload, User } from "./auth-context"
+import type { CompleteRegisterPayload, LoginDone, OtpSent, RegisterPayload, User } from "./auth-context"
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
@@ -26,6 +26,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string, remember: boolean) => {
     const res = await api.post("/auth/login", { email, password })
+    setToken(res.data.token, remember)
+    setUser(res.data.user)
+    return res.data.user as User
+  }
+
+  const requestLoginOtp = async (email: string, password: string, remember: boolean): Promise<OtpSent | LoginDone> => {
+    const res = await api.post("/auth/login", { email, password })
+    // demo account hole server sorasori token dey (OTP lage na)
+    if (res.data.token) {
+      setToken(res.data.token, remember)
+      setUser(res.data.user)
+      return { user: res.data.user as User }
+    }
+    return res.data
+  }
+
+  const resendLoginOtp = async (email: string): Promise<OtpSent> => {
+    const res = await api.post("/auth/login/resend-otp", { email })
+    return res.data
+  }
+
+  const completeLogin = async (email: string, otp: string, remember: boolean) => {
+    const res = await api.post("/auth/login/verify-otp", { email, otp })
     setToken(res.data.token, remember)
     setUser(res.data.user)
     return res.data.user as User
@@ -69,6 +92,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         loading,
         login,
+        requestLoginOtp,
+        resendLoginOtp,
+        completeLogin,
         register,
         requestRegisterOtp,
         resendRegisterOtp,

@@ -11,10 +11,11 @@ import { ROLE_HOME } from "@/config/constants"
 import { useAuth } from "@/stores/auth-context"
 import { OAUTH_ERRORS } from "../oauth"
 import SocialButtons from "./SocialButtons"
+import OtpStep from "./OtpStep"
 import { getErrorMessage } from "@/services/api"
 
 export default function LoginForm() {
-  const { login } = useAuth()
+  const { requestLoginOtp, resendLoginOtp, completeLogin } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [searchParams] = useSearchParams()
@@ -27,6 +28,8 @@ export default function LoginForm() {
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
   const [serverError, setServerError] = useState(() => OAUTH_ERRORS[searchParams.get("error") ?? ""] ?? "")
   const [submitting, setSubmitting] = useState(false)
+  const [step, setStep] = useState<"form" | "otp">("form")
+  const [resendAfter, setResendAfter] = useState(60)
 
   const validate = () => {
     const next: { email?: string; password?: string } = {}
@@ -42,13 +45,35 @@ export default function LoginForm() {
     if (!validate()) return
     setSubmitting(true)
     try {
-      const user = await login(email.trim(), password, remember)
-      navigate(from ?? ROLE_HOME[user.role], { replace: true })
+      const result = await requestLoginOtp(email.trim(), password, remember)
+      if ("user" in result) {
+        navigate(from ?? ROLE_HOME[result.user.role], { replace: true })
+        return
+      }
+      setResendAfter(result.resendAfterSeconds)
+      setStep("otp")
     } catch (err) {
       setServerError(getErrorMessage(err))
     } finally {
       setSubmitting(false)
     }
+  }
+
+  if (step === "otp") {
+    return (
+      <OtpStep
+        email={email.trim()}
+        initialCooldown={resendAfter}
+        submitLabel="Verify & sign in"
+        backLabel="Back to login"
+        onBack={() => setStep("form")}
+        onResend={async () => (await resendLoginOtp(email.trim())).resendAfterSeconds}
+        onVerify={async (otp) => {
+          const user = await completeLogin(email.trim(), otp, remember)
+          navigate(from ?? ROLE_HOME[user.role], { replace: true })
+        }}
+      />
+    )
   }
 
   const inputClass = "h-12 rounded-xl pl-10"
@@ -132,7 +157,7 @@ export default function LoginForm() {
         className="h-12 w-full rounded-xl bg-teal-600 text-base font-semibold text-white hover:bg-teal-700"
       >
         {submitting ? <Loader2 className="animate-spin" size={18} /> : <LogIn size={18} />}
-        {submitting ? "Signing in..." : "Login"}
+        {submitting ? "Sending code..." : "Login"}
       </Button>
 
       <div className="flex items-center gap-4 text-xs font-medium uppercase tracking-wide text-slate-400">

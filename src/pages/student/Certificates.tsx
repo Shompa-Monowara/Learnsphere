@@ -1,4 +1,4 @@
-import { Award, Download, Eye, GraduationCap } from "lucide-react"
+import { Award, BadgeCheck, Download, Eye, GraduationCap } from "lucide-react"
 import { useState } from "react"
 import { Link } from "react-router-dom"
 import EmptyState from "@/features/student/components/EmptyState"
@@ -94,6 +94,9 @@ export default function Certificates() {
                     {c.course?.instructor?.name && ` · ${c.course.instructor.name}`}
                   </span>
                   <div className="flex gap-2">
+                    <Link to={`/verify/${encodeURIComponent(c.verificationId)}`} target="_blank" className={BTN_OUTLINE}>
+                      <BadgeCheck size={15} /> Verify
+                    </Link>
                     <button type="button" onClick={() => void openPdf(c, "preview")} disabled={busy !== ""} className={BTN_OUTLINE}>
                       <Eye size={15} /> {busy === `${c._id}-preview` ? "Opening..." : "Preview"}
                     </button>

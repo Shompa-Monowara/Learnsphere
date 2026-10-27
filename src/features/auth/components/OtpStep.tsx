@@ -12,9 +12,19 @@ interface Props {
   onVerify: (otp: string) => Promise<void>
   onResend: () => Promise<number>
   onBack: () => void
+  submitLabel?: string
+  backLabel?: string
 }
 
-export default function OtpStep({ email, initialCooldown, onVerify, onResend, onBack }: Props) {
+export default function OtpStep({
+  email,
+  initialCooldown,
+  onVerify,
+  onResend,
+  onBack,
+  submitLabel = "Verify & create account",
+  backLabel = "Change details",
+}: Props) {
   const [otp, setOtp] = useState("")
   const [error, setError] = useState("")
   const [info, setInfo] = useState("")
@@ -101,7 +111,7 @@ export default function OtpStep({ email, initialCooldown, onVerify, onResend, on
         className="h-12 w-full rounded-xl bg-teal-600 text-base font-semibold text-white hover:bg-teal-700"
       >
         {verifying && <Loader2 className="animate-spin" size={18} />}
-        {verifying ? "Verifying..." : "Verify & create account"}
+        {verifying ? "Verifying..." : submitLabel}
       </Button>
 
       <div className="flex items-center justify-between text-sm">
@@ -110,7 +120,7 @@ export default function OtpStep({ email, initialCooldown, onVerify, onResend, on
           onClick={onBack}
           className="inline-flex items-center gap-1 font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400"
         >
-          <ArrowLeft size={14} /> Change details
+          <ArrowLeft size={14} /> {backLabel}
         </button>
         <button
           type="button"

@@ -29,10 +29,17 @@ export interface OtpSent {
   resendAfterSeconds: number
 }
 
+export interface LoginDone {
+  user: User
+}
+
 export interface AuthContextValue {
   user: User | null
   loading: boolean
   login: (email: string, password: string, remember: boolean) => Promise<User>
+  requestLoginOtp: (email: string, password: string, remember: boolean) => Promise<OtpSent | LoginDone>
+  resendLoginOtp: (email: string) => Promise<OtpSent>
+  completeLogin: (email: string, otp: string, remember: boolean) => Promise<User>
   register: (data: RegisterPayload) => Promise<User>
   requestRegisterOtp: (data: RegisterPayload) => Promise<OtpSent>
   resendRegisterOtp: (email: string) => Promise<OtpSent>

@@ -3,7 +3,15 @@ import { ExternalLink, Pencil, Trash2, X } from "lucide-react";
 import { api, getErrorMessage } from "@/services/api";
 import { BTN_OUTLINE } from "@/features/student/ui";
 import { cn } from "@/lib/utils";
-import { fileNameFromUrl, fmtDate, type AssignmentItem } from "./types";
+import {
+  STATUS_CLASS,
+  STATUS_LABEL,
+  SUBMISSION_TYPE_LABEL,
+  assignmentStatus,
+  fileNameFromUrl,
+  fmtDate,
+  type AssignmentItem,
+} from "./types";
 
 /* ---------- View ---------- */
 interface ViewProps {
@@ -13,18 +21,17 @@ interface ViewProps {
 }
 
 export function AssignmentViewModal({ a, onClose, onEdit }: ViewProps) {
+  const status = assignmentStatus(a);
+  const type = a.submissionType ?? "file";
+  const showFileRules = type !== "text";
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm">
       <div className="max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-white shadow-2xl">
         <div className="flex items-start justify-between px-6 pt-6">
           <div className="pr-4">
-            <span
-              className={cn(
-                "rounded-full px-2.5 py-0.5 text-xs font-medium",
-                a.closed ? "bg-slate-100 text-slate-500" : "bg-green-50 text-green-600",
-              )}
-            >
-              {a.closed ? "Closed" : "Active"}
+            <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-medium", STATUS_CLASS[status])}>
+              {STATUS_LABEL[status]}
             </span>
             <h2 className="mt-2 text-lg font-bold text-slate-900">{a.title}</h2>
             <p className="text-sm text-slate-500">{a.courseTitle}</p>
@@ -43,6 +50,20 @@ export function AssignmentViewModal({ a, onClose, onEdit }: ViewProps) {
             <Stat label="Deadline" value={fmtDate(a.deadline)} />
             <Stat label="Total marks" value={String(a.totalMarks)} />
             <Stat label="Graded" value={`${a.graded}/${a.total}`} />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Stat label="Submission type" value={SUBMISSION_TYPE_LABEL[type]} />
+            <Stat label="Late submissions" value={a.allowLate ? "Accepted" : "Not accepted"} />
+            <Stat label="Resubmission" value={a.allowResubmission ? "Until graded" : "Not allowed"} />
+            {showFileRules && (
+              <Stat
+                label="File rules"
+                value={`${
+                  a.allowedFileTypes.length > 0 ? a.allowedFileTypes.join(", ").toUpperCase() : "Any file"
+                } · ${a.maxFileSizeMB} MB`}
+              />
+            )}
           </div>
 
           <div>

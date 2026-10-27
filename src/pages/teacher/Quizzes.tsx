@@ -5,6 +5,7 @@ import PageHeader from "@/features/student/components/PageHeader"
 import { BTN_OUTLINE, BTN_PRIMARY } from "@/features/student/ui"
 import { FIELD, LABEL } from "@/features/teacher/builder/ui"
 import QuestionCard from "@/features/teacher/quizzes/QuestionCard"
+import AttemptsPanel from "@/features/teacher/quizzes/AttemptsPanel"
 import {
   FEEDBACK_OPTIONS,
   cleanQuiz,
@@ -457,6 +458,8 @@ export default function Quizzes() {
                 <Plus size={16} /> Add written question
               </button>
             </div>
+
+            {draft._id && <AttemptsPanel key={draft._id} quizId={draft._id} />}
 
             {draft._id && (
               <button

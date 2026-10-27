@@ -1,5 +1,5 @@
 import { ArrowLeft, CheckCircle2, Clock, XCircle } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { Link, useParams } from "react-router-dom"
 import Notice from "@/features/student/components/Notice"
 import PageState from "@/features/student/components/PageState"
@@ -28,11 +28,44 @@ export default function QuizPlayer() {
   const [result, setResult] = useState<AttemptResult | null>(null)
   const [busy, setBusy] = useState(false)
   const [submitError, setSubmitError] = useState("")
-  const [startedAt, setStartedAt] = useState(() => Date.now())
+  // deadline server theke ashe (null = time limit nai ba ekhono start hoy ni)
+  const [deadline, setDeadline] = useState<number | null>(null)
   const [now, setNow] = useState(() => Date.now())
 
   const quiz = data?.quiz
-  const running = !!quiz && !result
+  const quizId = quiz?._id
+  const running = !!quiz && !result && deadline !== null
+
+  const applyStart = useCallback((remaining: number | null) => {
+    const t = Date.now()
+    setNow(t)
+    setDeadline(remaining === null ? null : t + remaining * 1000)
+  }, [])
+
+  const begin = useCallback(async () => {
+    try {
+      const res = await api.post<{ remaining: number | null }>(`/quizzes/${id}/start`)
+      applyStart(res.data.remaining)
+    } catch (err) {
+      setSubmitError(getErrorMessage(err))
+    }
+  }, [id, applyStart])
+
+  useEffect(() => {
+    if (!quizId) return
+    let cancelled = false
+    api
+      .post<{ remaining: number | null }>(`/quizzes/${id}/start`)
+      .then((res) => {
+        if (!cancelled) applyStart(res.data.remaining)
+      })
+      .catch((err) => {
+        if (!cancelled) setSubmitError(getErrorMessage(err))
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [quizId, id, applyStart])
 
   useEffect(() => {
     if (!running) return
@@ -40,7 +73,7 @@ export default function QuizPlayer() {
     return () => clearInterval(t)
   }, [running])
 
-  const remaining = quiz ? Math.max(0, quiz.duration * 60 - Math.floor((now - startedAt) / 1000)) : 0
+  const remaining = deadline === null ? 0 : Math.max(0, Math.ceil((deadline - now) / 1000))
 
   const answered = quiz
     ? quiz.questions.filter((_, i) => {
@@ -77,8 +110,8 @@ export default function QuizPlayer() {
   const retake = () => {
     setResult(null)
     setAnswers({})
-    setStartedAt(Date.now())
-    setNow(Date.now())
+    setDeadline(null)
+    void begin()
   }
 
   const back = (
@@ -183,9 +216,11 @@ export default function QuizPlayer() {
                   {answered}/{quiz.questions.length} answered · Pass at {quiz.passingScore}%
                 </p>
               </div>
-              <span className={cn("flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold", remaining <= 60 ? "bg-red-50 text-red-600" : "bg-teal-50 text-teal-700")}>
-                <Clock size={14} /> {clock(remaining)}
-              </span>
+              {deadline !== null && (
+                <span className={cn("flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold", remaining <= 60 ? "bg-red-50 text-red-600" : "bg-teal-50 text-teal-700")}>
+                  <Clock size={14} /> {clock(remaining)}
+                </span>
+              )}
             </div>
 
             {quiz.questions.map((q, qi) => (

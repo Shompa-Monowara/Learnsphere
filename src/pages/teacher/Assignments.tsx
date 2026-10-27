@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
+import { Link } from "react-router-dom";
 import { Eye, Pencil, Plus, Trash2 } from "lucide-react";
 import { api, getErrorMessage } from "@/services/api";
 import { BTN_PRIMARY } from "@/features/student/ui";
@@ -12,6 +13,10 @@ import {
 } from "@/features/teacher/assignments/AssignmentDialogs";
 import GradeDrawer from "@/features/teacher/assignments/GradeDrawer";
 import {
+  STATUS_CLASS,
+  STATUS_LABEL,
+  SUBMISSION_TYPE_LABEL,
+  assignmentStatus,
   fmtDate,
   fmtDateTime,
   initials,
@@ -127,6 +132,16 @@ export default function TeacherAssignments() {
 
       {error && <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>}
 
+      {/* Course nai: age course banate bolo */}
+      {!loading && !error && data.courses.length === 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <p>You need a course before you can create assignments.</p>
+          <Link to="/teacher/builder" className="font-semibold underline">
+            Go to Course Builder
+          </Link>
+        </div>
+      )}
+
       {/* Assignment cards */}
       {loading ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -143,6 +158,7 @@ export default function TeacherAssignments() {
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {data.assignments.map((a) => {
             const on = selected === a.id;
+            const st = assignmentStatus(a);
             return (
               <div
                 key={a.id}
@@ -174,19 +190,17 @@ export default function TeacherAssignments() {
                         icon={<Trash2 className="h-3.5 w-3.5" />}
                       />
                     </div>
-                    <span
-                      className={cn(
-                        "rounded-full px-2.5 py-0.5 text-xs font-medium",
-                        a.closed ? "bg-slate-100 text-slate-500" : "bg-green-50 text-green-600",
-                      )}
-                    >
-                      {a.closed ? "Closed" : "Active"}
+                    <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-medium", STATUS_CLASS[st])}>
+                      {STATUS_LABEL[st]}
                     </span>
                   </div>
                 </div>
 
                 <p className="mt-3 line-clamp-1 text-sm font-bold text-slate-900">{a.title}</p>
                 <p className="line-clamp-1 text-xs text-slate-500">{a.courseTitle}</p>
+                <p className="mt-1 text-[11px] font-medium text-teal-700">
+                  {SUBMISSION_TYPE_LABEL[a.submissionType ?? "file"]}
+                </p>
                 <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3 text-xs text-slate-500">
                   <span>
                     {a.graded}/{a.total} graded
@@ -278,8 +292,16 @@ export default function TeacherAssignments() {
                   <td className="px-4 py-3">
                     <p className="text-slate-800">{s.assignmentTitle}</p>
                     {s.fileName && <p className="text-xs text-slate-400">{s.fileName}</p>}
+                    {!s.fileName && s.text && <p className="text-xs text-slate-400">Written answer</p>}
                   </td>
-                  <td className="px-4 py-3 text-xs text-slate-500">{fmtDateTime(s.submittedAt)}</td>
+                  <td className="px-4 py-3 text-xs text-slate-500">
+                    {fmtDateTime(s.submittedAt)}
+                    {s.isLate && (
+                      <span className="ml-2 rounded-full bg-red-50 px-2 py-0.5 text-[11px] font-medium text-red-600">
+                        Late
+                      </span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 font-bold text-slate-900">
                     {s.score === null ? (
                       <span className="font-normal text-slate-300">—</span>

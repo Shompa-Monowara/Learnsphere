@@ -1,3 +1,17 @@
+export type SubmissionType = "file" | "text" | "both";
+
+export const SUBMISSION_TYPE_OPTIONS: { value: SubmissionType; label: string; hint: string }[] = [
+  { value: "file", label: "File upload", hint: "Student uploads a file (PDF, ZIP, image…)" },
+  { value: "text", label: "Written answer", hint: "Student types the answer online" },
+  { value: "both", label: "File + written", hint: "Student must give both" },
+];
+
+export const SUBMISSION_TYPE_LABEL: Record<SubmissionType, string> = {
+  file: "File upload",
+  text: "Written answer",
+  both: "File + written",
+};
+
 export interface AssignmentItem {
   id: string;
   title: string;
@@ -12,6 +26,11 @@ export interface AssignmentItem {
   enrolled: number;
   isPublished: boolean;
   closed: boolean;
+  submissionType: SubmissionType;
+  allowLate: boolean;
+  allowResubmission: boolean;
+  allowedFileTypes: string[];
+  maxFileSizeMB: number;
 }
 
 export interface SubmissionItem {
@@ -24,6 +43,7 @@ export interface SubmissionItem {
   fileName: string;
   fileUrl: string;
   text: string;
+  isLate: boolean;
   submittedAt: string | null;
   score: number | null;
   feedback: string;

@@ -11,27 +11,26 @@ export default function OAuthCallback() {
   const [params] = useSearchParams()
   const started = useRef(false)
   const [error, setError] = useState("")
+  const code = params.get("code")
 
   useEffect(() => {
-    if (started.current) return
+    if (!code || started.current) return
     started.current = true
 
-    const code = params.get("code")
-    if (!code) {
-      setError("Missing sign-in code.")
-      return
-    }
     exchangeOAuthCode(code)
       .then((user) => navigate(ROLE_HOME[user.role], { replace: true }))
       .catch((err) => setError(getErrorMessage(err)))
-  }, [exchangeOAuthCode, navigate, params])
+  }, [code, exchangeOAuthCode, navigate])
+
+  /* code na thakle effect e setState na kore render er somoy-i error dekhai */
+  const message = code ? error : "Missing sign-in code."
 
   return (
     <div className="grid min-h-screen place-items-center p-6">
-      {error ? (
+      {message ? (
         <div className="max-w-sm space-y-4 text-center">
           <AlertCircle className="mx-auto text-red-600" size={32} />
-          <p className="text-sm text-slate-700 dark:text-slate-300">{error}</p>
+          <p className="text-sm text-slate-700 dark:text-slate-300">{message}</p>
           <Link to="/login" className="font-semibold text-teal-600 hover:text-teal-700">
             Back to login
           </Link>

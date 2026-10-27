@@ -63,4 +63,6 @@ function Button({
   )
 }
 
+/* shadcn er standard pattern: component ar variants ek file e. Fast-refresh warning ignore kora hoyeche */
+// eslint-disable-next-line react-refresh/only-export-components
 export { Button, buttonVariants }
