@@ -12,6 +12,8 @@ export interface InstructorItem {
   category: string
   categories: string[]
   skills: string[]
+  /* true hole admin er banano profile: Message button dekhabe na */
+  profileOnly?: boolean
 }
 
 export interface InstructorsResponse {

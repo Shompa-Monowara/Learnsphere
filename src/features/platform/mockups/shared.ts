@@ -1,0 +1,1 @@
+export const label = "text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400"

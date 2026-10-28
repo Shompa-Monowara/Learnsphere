@@ -46,6 +46,7 @@ import TeacherSettings from "@/pages/teacher/Settings"
 import AdminLayout from "@/layouts/AdminLayout"
 import AdminNotifications from "@/pages/admin/Notifications"
 import AdminCategories from "@/pages/admin/Categories"
+import AdminInstructors from "@/pages/admin/Instructors"
 import AdminPayments from "@/pages/admin/Payments"
 import AdminReports from "@/pages/admin/Reports"
 import AdminCourses from "@/pages/admin/Courses"
@@ -139,6 +140,7 @@ export default function AppRoutes() {
           <Route path="users" element={<AdminUsers />} />
           <Route path="courses" element={<AdminCourses />} />
           <Route path="categories" element={<AdminCategories />} />
+          <Route path="instructors" element={<AdminInstructors />} />
           <Route path="reports" element={<AdminReports />} />
           <Route path="payments" element={<AdminPayments />} />
           <Route path="messages" element={<AdminMessages />} />

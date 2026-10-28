@@ -57,11 +57,13 @@ export default function InstructorModal({ instructor: i, onClose }: Props) {
   }, [onClose])
 
   const firstName = i.name.split(" ")[0]
-  const canMessage = !user || (user.role !== "admin" && user._id !== i._id)
+  const canMessage = !i.profileOnly && (!user || (user.role !== "admin" && user._id !== i._id))
   const messagesPath = user?.role === "teacher" ? "/teacher/messages" : "/student/messages"
   const bio =
     i.bio?.trim() ||
-    `${firstName} teaches ${i.coursesCount} course${i.coursesCount === 1 ? "" : "s"} on LearnSphere.`
+    (i.profileOnly
+      ? `${firstName} is part of the LearnSphere instructor team.`
+      : `${firstName} teaches ${i.coursesCount} course${i.coursesCount === 1 ? "" : "s"} on LearnSphere.`)
 
   const send = async () => {
     const value = text.trim()
