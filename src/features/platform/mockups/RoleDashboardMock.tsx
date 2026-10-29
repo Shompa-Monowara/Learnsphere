@@ -121,14 +121,18 @@ export function RoleDashboardMock({ floating }: { floating?: boolean }) {
                 }
           }
           style={{ willChange: "transform", transform: "translateZ(0)" }}
-          className="absolute -bottom-5 -left-4 z-20 inline-flex w-fit items-center gap-2.5 rounded-xl border border-slate-200 bg-white py-2 pl-3 pr-3 shadow-lg dark:border-slate-700 dark:bg-slate-900 sm:-left-8"
+          className="absolute -bottom-5 -left-4 z-20 flex w-auto items-center gap-2.5 rounded-xl border border-slate-200 bg-white p-2.5 shadow-lg dark:border-slate-700 dark:bg-slate-900 sm:-left-8"
         >
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-teal-50 text-teal-600 dark:bg-teal-950">
             <ShieldCheck size={16} />
           </span>
-          <div className="shrink-0 whitespace-nowrap">
-            <p className="text-xs font-bold leading-none text-slate-900 dark:text-white">WCAG AA contrast</p>
-            <p className="mt-1 text-[10px] leading-none text-slate-500 dark:text-slate-400">on every screen</p>
+          <div className="flex flex-col justify-center whitespace-nowrap">
+            <span className="text-xs font-bold leading-tight text-slate-900 dark:text-white">
+              WCAG AA contrast
+            </span>
+            <span className="text-[10px] leading-tight text-slate-500 dark:text-slate-400">
+              on every screen
+            </span>
           </div>
         </motion.div>
       )}

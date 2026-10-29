@@ -136,6 +136,51 @@ export async function fetchAllCourses(): Promise<CatalogCourse[]> {
   return list.map(toCatalog)
 }
 
+export interface CatalogQuery {
+  q: string
+  categories: string[]
+  levels: string[]
+  rating: number
+  durations: string[]
+  prices: string[]
+  sort: string
+  page: number
+  limit: number
+}
+
+export interface CatalogPage {
+  courses: CatalogCourse[]
+  total: number
+  pages: number
+}
+
+export interface CategoryOption {
+  id: string
+  name: string
+  count: number
+}
+
+/* Server-side filter: backend GET /courses e filter, sort, page pathay */
+export async function fetchCoursesPage(query: CatalogQuery, signal?: AbortSignal): Promise<CatalogPage> {
+  const params: Record<string, string | number> = { sort: query.sort, page: query.page, limit: query.limit }
+  if (query.q.trim()) params.q = query.q.trim()
+  if (query.categories.length) params.category = query.categories.join(",")
+  if (query.levels.length) params.level = query.levels.join(",")
+  if (query.rating > 0) params.minRating = query.rating
+  if (query.durations.length) params.duration = query.durations.join(",")
+  if (query.prices.length) params.price = query.prices.join(",")
+  const res = await api.get("/courses", { params, signal })
+  return { courses: res.data.courses.map(toCatalog), total: res.data.total, pages: res.data.pages }
+}
+
+/* Sidebar er category list (admin ja banay) + published course count */
+export async function fetchCategoryOptions(): Promise<CategoryOption[]> {
+  const res = await api.get("/categories")
+  return (res.data.categories as { _id: string; name: string; coursesCount?: number }[])
+    .filter((c) => (c.coursesCount ?? 0) > 0)
+    .map((c) => ({ id: c._id, name: c.name, count: c.coursesCount ?? 0 }))
+}
+
 export async function fetchCourse(id: string): Promise<{ course: CourseDetail; enrolled: boolean }> {
   const res = await api.get(`/courses/${id}`)
   return { course: toDetail(res.data.course), enrolled: !!res.data.enrolled }

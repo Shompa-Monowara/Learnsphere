@@ -2,10 +2,11 @@ import { useState } from "react"
 import type { ReactNode } from "react"
 import { ChevronUp, SlidersHorizontal, Star } from "lucide-react"
 import type { Filters } from "../data"
+import type { CategoryOption } from "../api"
 
 const LEVELS = ["Beginner", "Intermediate", "Advanced"]
-const DURATIONS = [["short", "0 – 20 hours"], ["medium", "20 – 30 hours"], ["long", "30+ hours"]]
-const PRICES = [["free", "Free"], ["under", "Under $45"], ["mid", "$45 – $60"], ["over", "Over $60"]]
+const DURATIONS = [["short", "Under 2 hours"], ["medium", "2 – 5 hours"], ["long", "5+ hours"]]
+const PRICES = [["free", "Free"], ["under20", "Under $20"], ["20to50", "$20 – $50"], ["over50", "Over $50"]]
 const RATINGS = [[0, "Any rating"], [4.5, "4.5 & up"], [4, "4.0 & up"], [3.5, "3.5 & up"]] as const
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
@@ -24,7 +25,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 interface Props {
   filters: Filters
   onChange: (next: Filters) => void
-  categories: [string, number][]
+  categories: CategoryOption[]
 }
 
 export default function FilterSidebar({ filters, onChange, categories }: Props) {
@@ -47,7 +48,7 @@ export default function FilterSidebar({ filters, onChange, categories }: Props) 
         <SlidersHorizontal size={16} className="text-teal-600" /> Filters
       </div>
 
-      <Section title="Category">{categories.map(([name, n]) => check("categories", name, name, n))}</Section>
+      <Section title="Category">{categories.map((c) => check("categories", c.id, c.name, c.count))}</Section>
       <Section title="Level">{LEVELS.map((l) => check("levels", l, l))}</Section>
       <Section title="Rating">
         {RATINGS.map(([value, label]) => (

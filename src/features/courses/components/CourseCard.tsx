@@ -79,7 +79,7 @@ export default function CourseCard({ course, view = "grid", liked = false, onTog
             )}
           </div>
           <Button asChild size="sm" className="mt-4 rounded-lg bg-teal-600 text-white hover:bg-teal-700">
-            <Link to={`/courses/${course.id}`}>Enroll</Link>
+            <Link to={`/courses/${course.id}`}>View course</Link>
           </Button>
         </div>
       </div>
