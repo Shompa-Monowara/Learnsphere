@@ -212,18 +212,21 @@ function ReviewForm({ courseId, initialRating, initialComment, onDone }: ReviewF
 function Reviews({ course, data, enrolled, onReviewed }: { course: CourseDetail; data: ReviewData; enrolled: boolean; onReviewed: () => void }) {
   const { user } = useAuth()
   const total = data.breakdown.reduce((n, b) => n + b.count, 0)
+  const isStudent = user?.role === "student"
+  /* Review shudhu enrolled student dite pare */
+  const canReview = isStudent && enrolled
   const myReview = user ? data.reviews.find((r) => r.student?._id === user._id) : undefined
 
-  /* Enroll na thakle form dekhai na, tai keno dekhacche na seta bole dei */
+  /* Form keno dekhacche na seta user ke bole dei */
   const reviewHint = !user
     ? "Log in and enroll in this course to leave a review."
-    : user.role === "student"
+    : isStudent
       ? "Enroll in this course to leave a review."
       : "Only students enrolled in this course can leave a review."
 
   return (
     <div>
-      {enrolled ? (
+      {canReview ? (
         <ReviewForm
           key={myReview?._id ?? "new"}
           courseId={course.id}
@@ -263,7 +266,7 @@ function Reviews({ course, data, enrolled, onReviewed }: { course: CourseDetail;
 
       {data.reviews.length === 0 ? (
         <p className="mt-8 rounded-xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">
-          {enrolled ? "No reviews yet. Be the first to review this course." : "No reviews yet."}
+          {canReview ? "No reviews yet. Be the first to review this course." : "No reviews yet."}
         </p>
       ) : (
         <ul className="mt-8 space-y-6">
