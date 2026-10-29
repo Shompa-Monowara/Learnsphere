@@ -81,11 +81,11 @@ const SOCIALS: { label: string; href: string; icon: ReactNode }[] = [
 export default function Footer() {
   return (
     <footer className="bg-[#0f3a36] text-[#4fe3b9]">
-      <div className="mx-auto max-w-[1152px] px-4 pt-14 sm:px-6">
+      <div className="mx-auto max-w-6xl px-4 pt-14 sm:px-6">
         <div className="grid gap-10 md:grid-cols-[1.7fr_1fr_1fr_1fr_1fr]">
           <div>
             <Link to="/" className="flex items-center gap-2.5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-teal-400 to-emerald-500 text-white">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-linear-to-br from-teal-400 to-emerald-500 text-white">
                 <GraduationCap size={20} />
               </span>
               <span className="text-xl font-bold text-white">LearnSphere</span>

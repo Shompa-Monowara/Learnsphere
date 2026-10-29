@@ -129,7 +129,7 @@ export default function CourseDetails() {
       )}
 
       <section className="bg-linear-to-br from-teal-50 via-white to-orange-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900">
-        <div className="mx-auto max-w-[1200px] px-4 py-10 sm:px-6">
+        <div className="mx-auto max-w-300 px-4 py-10 sm:px-6">
           <nav className="flex flex-wrap items-center gap-2 text-sm text-slate-500">
             <Link to="/" className="hover:text-teal-600">Home</Link><span>›</span>
             <Link to="/courses" className="hover:text-teal-600">Courses</Link><span>›</span>
@@ -173,7 +173,7 @@ export default function CourseDetails() {
         </div>
       </section>
 
-      <div className="mx-auto grid max-w-[1200px] items-start gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[1fr_340px]">
+      <div className="mx-auto grid max-w-300 items-start gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[1fr_340px]">
         <div className="min-w-0 space-y-8">
           <button
             type="button"
