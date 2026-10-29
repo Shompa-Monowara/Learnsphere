@@ -117,6 +117,8 @@ export default function CourseDetails() {
   const off = discount(course)
   const wished = ids.has(course.id)
   const includes = buildIncludes(course)
+  /* Teacher / admin login thakle "Buy now" dekhalam na, karon ora kinte pare na */
+  const isStaffViewer = !!user && user.role !== "student"
 
   return (
     <>
@@ -220,9 +222,17 @@ export default function CourseDetails() {
                   <CheckCircle2 size={18} /> You are enrolled in this course.
                 </p>
                 <Button asChild className="h-11 w-full rounded-xl bg-teal-600 text-white hover:bg-teal-700">
+                  <Link to={`/student/learn/${course.id}`}>Continue learning</Link>
+                </Button>
+                <Button asChild variant="outline" className="h-11 w-full rounded-xl">
                   <Link to="/student">Go to my dashboard</Link>
                 </Button>
               </div>
+            ) : isStaffViewer ? (
+              <p className="mt-5 flex items-start gap-2 rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                <Info size={16} className="mt-0.5 shrink-0" />
+                You are signed in as {user?.role}. Only student accounts can buy or enroll in courses.
+              </p>
             ) : (
               <Button
                 onClick={handleEnroll}

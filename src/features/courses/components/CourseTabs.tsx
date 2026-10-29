@@ -6,6 +6,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { getErrorMessage } from "@/services/api"
+import { useAuth } from "@/stores/auth-context"
 import { initials } from "../data"
 import { submitReview } from "../api"
 import type { CourseDetail, ReviewData } from "../api"
@@ -150,9 +151,18 @@ function InstructorTab({ course }: { course: CourseDetail }) {
   )
 }
 
-function ReviewForm({ courseId, onDone }: { courseId: string; onDone: () => void }) {
-  const [rating, setRating] = useState(0)
-  const [comment, setComment] = useState("")
+interface ReviewFormProps {
+  courseId: string
+  initialRating: number
+  initialComment: string
+  onDone: () => void
+}
+
+function ReviewForm({ courseId, initialRating, initialComment, onDone }: ReviewFormProps) {
+  /* initialRating > 0 mane user ager-i review diyechhe, ekhon edit korche */
+  const editing = initialRating > 0
+  const [rating, setRating] = useState(initialRating)
+  const [comment, setComment] = useState(initialComment)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState("")
 
@@ -166,8 +176,6 @@ function ReviewForm({ courseId, onDone }: { courseId: string; onDone: () => void
     setError("")
     try {
       await submitReview(courseId, rating, comment.trim())
-      setRating(0)
-      setComment("")
       onDone()
     } catch (err) {
       setError(getErrorMessage(err))
@@ -178,7 +186,7 @@ function ReviewForm({ courseId, onDone }: { courseId: string; onDone: () => void
 
   return (
     <form onSubmit={submit} className="mb-8 rounded-2xl border border-slate-200 p-5 dark:border-slate-800">
-      <p className="font-semibold">Rate this course</p>
+      <p className="font-semibold">{editing ? "Update your review" : "Rate this course"}</p>
       <div className="mt-3 flex gap-1">
         {[1, 2, 3, 4, 5].map((n) => (
           <button key={n} type="button" onClick={() => setRating(n)} aria-label={`${n} stars`}>
@@ -195,18 +203,37 @@ function ReviewForm({ courseId, onDone }: { courseId: string; onDone: () => void
       />
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
       <Button type="submit" disabled={sending} className="mt-3 rounded-xl bg-teal-600 text-white hover:bg-teal-700">
-        {sending && <Loader2 size={16} className="animate-spin" />} Submit review
+        {sending && <Loader2 size={16} className="animate-spin" />} {editing ? "Update review" : "Submit review"}
       </Button>
     </form>
   )
 }
 
 function Reviews({ course, data, enrolled, onReviewed }: { course: CourseDetail; data: ReviewData; enrolled: boolean; onReviewed: () => void }) {
+  const { user } = useAuth()
   const total = data.breakdown.reduce((n, b) => n + b.count, 0)
+  const myReview = user ? data.reviews.find((r) => r.student?._id === user._id) : undefined
+
+  /* Enroll na thakle form dekhai na, tai keno dekhacche na seta bole dei */
+  const reviewHint = !user
+    ? "Log in and enroll in this course to leave a review."
+    : user.role === "student"
+      ? "Enroll in this course to leave a review."
+      : "Only students enrolled in this course can leave a review."
 
   return (
     <div>
-      {enrolled && <ReviewForm courseId={course.id} onDone={onReviewed} />}
+      {enrolled ? (
+        <ReviewForm
+          key={myReview?._id ?? "new"}
+          courseId={course.id}
+          initialRating={myReview?.rating ?? 0}
+          initialComment={myReview?.comment ?? ""}
+          onDone={onReviewed}
+        />
+      ) : (
+        <p className="mb-8 rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:bg-slate-900 dark:text-slate-400">{reviewHint}</p>
+      )}
 
       <div className="grid gap-8 sm:grid-cols-[180px_1fr]">
         <div className="text-center">
@@ -235,7 +262,9 @@ function Reviews({ course, data, enrolled, onReviewed }: { course: CourseDetail;
       </div>
 
       {data.reviews.length === 0 ? (
-        <p className="mt-8 rounded-xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">No reviews yet. Be the first to review this course.</p>
+        <p className="mt-8 rounded-xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">
+          {enrolled ? "No reviews yet. Be the first to review this course." : "No reviews yet."}
+        </p>
       ) : (
         <ul className="mt-8 space-y-6">
           {data.reviews.map((r) => (
