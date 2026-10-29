@@ -1,243 +1,218 @@
-import { useEffect, useState } from "react"
+import { useMemo, useState } from "react"
 import { Link } from "react-router-dom"
-import { AlertCircle, ChevronLeft, ChevronRight, LayoutGrid, List, Search, SlidersHorizontal, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { fetchCategoryOptions, fetchCoursesPage } from "@/features/courses/api"
-import type { CategoryOption } from "@/features/courses/api"
-import CourseCard from "@/features/courses/components/CourseCard"
-import FilterSidebar from "@/features/courses/components/FilterSidebar"
-import { EMPTY_FILTERS } from "@/features/courses/data"
-import type { CatalogCourse, Filters } from "@/features/courses/data"
-import { useWishlist } from "@/features/courses/hooks/useWishlist"
+import { ArrowRight, BookOpen, Briefcase, Clock, Globe, Heart, Laptop, MapPin, Rocket, Sparkles, Users, Wallet } from "lucide-react"
+import type { LucideIcon } from "lucide-react"
 
-const PER_PAGE = 9
+interface Role {
+  title: string
+  department: "Engineering" | "Design" | "Teaching" | "Support"
+  location: string
+  type: "Full-time" | "Part-time" | "Contract"
+  summary: string
+}
 
-export default function Courses() {
-  const [result, setResult] = useState<{ key: string; courses: CatalogCourse[]; total: number; pages: number; error: boolean } | null>(null)
-  const [categories, setCategories] = useState<CategoryOption[]>([])
-  const [attempt, setAttempt] = useState(0)
+interface Perk {
+  icon: LucideIcon
+  title: string
+  text: string
+}
 
-  const [query, setQuery] = useState("")
-  const [debouncedQuery, setDebouncedQuery] = useState("")
-  const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS)
-  const [sort, setSort] = useState("popular")
-  const [view, setView] = useState<"grid" | "list">("grid")
-  const [page, setPage] = useState(1)
-  const [showFilters, setShowFilters] = useState(false)
-  const { ids, toggle } = useWishlist()
+const PERKS: Perk[] = [
+  { icon: Globe, title: "Remote friendly", text: "Work from wherever you do your best thinking. We plan around outcomes, not office hours." },
+  { icon: BookOpen, title: "Learning budget", text: "Every teammate gets a yearly budget for courses, books and conferences, and yes, LearnSphere courses are free." },
+  { icon: Wallet, title: "Fair, transparent pay", text: "Clear salary bands for every role, reviewed twice a year, so nobody has to negotiate in the dark." },
+  { icon: Laptop, title: "Good equipment", text: "Pick the laptop and setup you need. We would rather you have the right tools than a loud office." },
+  { icon: Heart, title: "Time to recharge", text: "Generous paid leave, local holidays off, and a team that actually encourages you to log off." },
+  { icon: Users, title: "Small, kind team", text: "Direct access to everyone, short feedback loops and no room for ego. Your work ships fast." },
+]
 
-  /* Search: user type korar 400ms por server e request jabe */
-  useEffect(() => {
-    const t = setTimeout(() => {
-      setDebouncedQuery(query)
-      setPage(1)
-    }, 400)
-    return () => clearTimeout(t)
-  }, [query])
+const VALUES = [
+  { title: "Learners first", text: "Every decision starts with what helps a student finish a course and feel proud of it." },
+  { title: "Calm software", text: "We build clear, quiet tools that get out of the way of teaching and learning." },
+  { title: "Own it", text: "Small team, real responsibility. You see your work reach people within days, not quarters." },
+]
 
-  /* Category list (admin ja banay) — ekbar load hobe */
-  useEffect(() => {
-    fetchCategoryOptions().then(setCategories).catch(() => setCategories([]))
-  }, [])
+/* Role gulo ekhane thake. Notun role add korte hole ei array te ekta object jog koro. */
+const ROLES: Role[] = [
+  {
+    title: "Full Stack Engineer (MERN)",
+    department: "Engineering",
+    location: "Remote",
+    type: "Full-time",
+    summary: "Build features across our React frontend and Node/Express/MongoDB backend, from course tools to payments.",
+  },
+  {
+    title: "Frontend Engineer",
+    department: "Engineering",
+    location: "Remote",
+    type: "Full-time",
+    summary: "Own the learner and instructor interfaces. React, TypeScript and Tailwind, with a strong eye for detail.",
+  },
+  {
+    title: "Product Designer",
+    department: "Design",
+    location: "Remote",
+    type: "Full-time",
+    summary: "Design clear, accessible flows for course creation, learning and progress tracking.",
+  },
+  {
+    title: "Instructor Success Lead",
+    department: "Teaching",
+    location: "Remote",
+    type: "Full-time",
+    summary: "Help new instructors plan, record and launch great courses, and learn what tools they need next.",
+  },
+  {
+    title: "Course Reviewer",
+    department: "Teaching",
+    location: "Remote",
+    type: "Contract",
+    summary: "Review submitted courses for quality and clarity, and give instructors kind, useful feedback.",
+  },
+  {
+    title: "Support Specialist",
+    department: "Support",
+    location: "Remote",
+    type: "Part-time",
+    summary: "Answer learner and instructor questions with care, and turn common questions into better help articles.",
+  },
+]
 
-  /* Filter / sort / page / search bodlale key bodlay, tokhon result purono hoye "loading" dekhay */
-  const key = JSON.stringify([debouncedQuery, filters, sort, page, attempt])
-  const status: "loading" | "ready" | "error" = !result || result.key !== key ? "loading" : result.error ? "error" : "ready"
-  const courses = result?.courses ?? []
-  const total = result?.total ?? 0
-  const pages = result?.pages ?? 1
+const DEPARTMENTS = ["All", "Engineering", "Design", "Teaching", "Support"] as const
 
-  useEffect(() => {
-    const controller = new AbortController()
-    fetchCoursesPage(
-      {
-        q: debouncedQuery,
-        categories: filters.categories,
-        levels: filters.levels,
-        rating: filters.rating,
-        durations: filters.durations,
-        prices: filters.prices,
-        sort,
-        page,
-        limit: PER_PAGE,
-      },
-      controller.signal
-    )
-      .then((data) => setResult({ key, courses: data.courses, total: data.total, pages: data.pages, error: false }))
-      .catch((err) => {
-        if (err?.code === "ERR_CANCELED" || err?.name === "CanceledError") return
-        setResult({ key, courses: [], total: 0, pages: 1, error: true })
-      })
-    return () => controller.abort()
-  }, [key, debouncedQuery, filters, sort, page])
+export default function Careers() {
+  const [department, setDepartment] = useState<(typeof DEPARTMENTS)[number]>("All")
 
-  const retry = () => setAttempt((a) => a + 1)
-  const noFilters =
-    !debouncedQuery.trim() &&
-    !filters.categories.length &&
-    !filters.levels.length &&
-    !filters.rating &&
-    !filters.durations.length &&
-    !filters.prices.length
+  const roles = useMemo(
+    () => (department === "All" ? ROLES : ROLES.filter((r) => r.department === department)),
+    [department]
+  )
 
-  const current = Math.min(page, pages)
-
-  const updateFilters = (next: Filters) => {
-    setFilters(next)
-    setPage(1)
-  }
-  const reset = () => {
-    setFilters(EMPTY_FILTERS)
-    setQuery("")
-    setDebouncedQuery("")
-    setPage(1)
-  }
+  const chip = (active: boolean) =>
+    `rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${
+      active
+        ? "border-teal-600 bg-teal-600 text-white"
+        : "border-slate-200 bg-white text-slate-700 hover:border-teal-300 hover:bg-teal-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+    }`
 
   return (
     <>
-      <section className="bg-linear-to-br from-teal-50 via-white to-orange-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900">
-        <div className="mx-auto max-w-[1200px] px-4 py-12 sm:px-6">
+      <section className="border-b border-slate-200/70 bg-teal-50/60 dark:border-slate-800 dark:bg-slate-900">
+        <div className="mx-auto max-w-300 px-4 py-12 sm:px-6">
           <nav className="flex items-center gap-2 text-sm text-slate-500">
             <Link to="/" className="hover:text-teal-600">Home</Link>
             <span>›</span>
-            <span className="font-medium text-slate-900 dark:text-white">Courses</span>
+            <span className="font-medium text-slate-900 dark:text-white">Careers</span>
           </nav>
-          <div className="mt-5 flex flex-wrap items-end justify-between gap-6">
-            <div>
-              <h1 className="text-4xl font-bold tracking-tight">Explore our courses</h1>
-              <p className="mt-3 max-w-xl text-slate-600 dark:text-slate-400">
-                Discover expert-led courses across data, design, development, business, and more. Filter by what matters to you and start learning today.
-              </p>
+          <span className="mt-6 inline-flex items-center gap-2 rounded-full border border-teal-200 bg-white px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-teal-700 dark:bg-slate-800">
+            <Rocket size={14} /> We are hiring
+          </span>
+          <h1 className="mt-4 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
+            Help us make learning feel calm
+          </h1>
+          <p className="mt-4 max-w-2xl text-base leading-relaxed text-slate-600 dark:text-slate-400">
+            LearnSphere is a small team building the tools that let academies and teachers share lessons, run quizzes
+            and issue certificates. Join us and see your work help real learners every day.
+          </p>
+          <a
+            href="#open-roles"
+            className="mt-7 inline-flex h-11 items-center gap-2 rounded-xl bg-teal-600 px-5 text-sm font-semibold text-white hover:bg-teal-700"
+          >
+            See open roles <ArrowRight size={16} />
+          </a>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-300 px-4 py-12 sm:px-6">
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">What we care about</h2>
+        <div className="mt-6 grid gap-6 md:grid-cols-3">
+          {VALUES.map((v) => (
+            <div
+              key={v.title}
+              className="rounded-2xl border border-slate-200/70 bg-white p-6 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.06)] dark:border-slate-800 dark:bg-slate-900"
+            >
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-50 text-teal-600 dark:bg-teal-950">
+                <Sparkles size={18} />
+              </span>
+              <h3 className="mt-4 text-lg font-bold text-slate-900 dark:text-white">{v.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">{v.text}</p>
             </div>
-            <div className="relative w-full max-w-sm">
-              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-              <Input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search courses, topics, instructors..."
-                className="h-12 rounded-xl bg-white pl-10 dark:bg-slate-900"
-              />
-            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="border-y border-slate-200/70 bg-slate-50/70 dark:border-slate-800 dark:bg-slate-900/50">
+        <div className="mx-auto max-w-300 px-4 py-12 sm:px-6">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Perks and benefits</h2>
+          <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {PERKS.map(({ icon: Icon, title, text }) => (
+              <div key={title} className="flex gap-4">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-600 dark:bg-teal-950">
+                  <Icon size={20} />
+                </span>
+                <div>
+                  <h3 className="font-semibold text-slate-900 dark:text-white">{title}</h3>
+                  <p className="mt-1 text-sm leading-relaxed text-slate-500 dark:text-slate-400">{text}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-[1200px] px-4 py-10 sm:px-6">
-        <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
-          <aside className={`${showFilters ? "block" : "hidden"} lg:block`}>
-            <FilterSidebar filters={filters} onChange={updateFilters} categories={categories} />
-          </aside>
+      <section id="open-roles" className="mx-auto max-w-300 scroll-mt-24 px-4 py-12 sm:px-6">
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Open roles</h2>
+        <div className="mt-5 flex flex-wrap gap-2">
+          {DEPARTMENTS.map((d) => (
+            <button key={d} type="button" className={chip(department === d)} onClick={() => setDepartment(d)}>
+              {d}
+            </button>
+          ))}
+        </div>
 
-          <div>
-            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-              <p className="text-sm text-slate-600 dark:text-slate-400">
-                {status === "ready" ? <>Showing <b className="text-slate-900 dark:text-white">{total}</b> courses</> : "Loading courses..."}
-              </p>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" className="rounded-lg lg:hidden" onClick={() => setShowFilters((v) => !v)}>
-                  {showFilters ? <X size={14} /> : <SlidersHorizontal size={14} />} Filters
-                </Button>
-                <select
-                  value={sort}
-                  onChange={(e) => { setSort(e.target.value); setPage(1) }}
-                  aria-label="Sort courses"
-                  className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-900"
-                >
-                  <option value="popular">Most popular</option>
-                  <option value="rating">Highest rated</option>
-                  <option value="price-low">Price: low to high</option>
-                  <option value="price-high">Price: high to low</option>
-                </select>
-                <div className="flex rounded-lg border border-slate-200 p-0.5 dark:border-slate-700">
-                  {([["grid", LayoutGrid], ["list", List]] as const).map(([v, Icon]) => (
-                    <button
-                      key={v}
-                      type="button"
-                      onClick={() => setView(v)}
-                      aria-label={`${v} view`}
-                      aria-pressed={view === v}
-                      className={`flex h-8 w-8 items-center justify-center rounded-md ${view === v ? "bg-teal-600 text-white" : "text-slate-500"}`}
-                    >
-                      <Icon size={15} />
-                    </button>
-                  ))}
-                </div>
-              </div>
+        <div className="mt-6 space-y-4">
+          {roles.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-slate-300 py-14 text-center dark:border-slate-700">
+              <p className="font-semibold text-slate-900 dark:text-white">No open roles in this team right now</p>
+              <p className="mt-1 text-sm text-slate-500">Check back soon, or send us a note below.</p>
             </div>
-
-            {status === "loading" && (
-              <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="animate-pulse overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800">
-                    <div className="aspect-video bg-slate-200 dark:bg-slate-800" />
-                    <div className="space-y-3 p-5">
-                      <div className="h-4 w-3/4 rounded bg-slate-200 dark:bg-slate-800" />
-                      <div className="h-3 w-1/2 rounded bg-slate-200 dark:bg-slate-800" />
-                      <div className="h-8 rounded bg-slate-200 dark:bg-slate-800" />
-                    </div>
+          ) : (
+            roles.map((r) => (
+              <div
+                key={r.title}
+                className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200/70 bg-white p-5 transition-colors hover:border-teal-300 dark:border-slate-800 dark:bg-slate-900"
+              >
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">{r.title}</h3>
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{r.summary}</p>
+                  <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-medium text-slate-500">
+                    <span className="flex items-center gap-1.5"><Briefcase size={13} className="text-teal-600" />{r.department}</span>
+                    <span className="flex items-center gap-1.5"><MapPin size={13} className="text-teal-600" />{r.location}</span>
+                    <span className="flex items-center gap-1.5"><Clock size={13} className="text-teal-600" />{r.type}</span>
                   </div>
-                ))}
+                </div>
+                <a
+                  href={`mailto:hello@learnsphere.com?subject=${encodeURIComponent(`Application: ${r.title}`)}`}
+                  className="inline-flex h-10 items-center gap-2 rounded-xl border border-teal-200 px-4 text-sm font-semibold text-teal-700 hover:bg-teal-50 dark:border-teal-900 dark:text-teal-300 dark:hover:bg-teal-950"
+                >
+                  Apply <ArrowRight size={15} />
+                </a>
               </div>
-            )}
+            ))
+          )}
+        </div>
 
-            {status === "error" && (
-              <div className="rounded-2xl border border-red-200 bg-red-50 py-16 text-center dark:border-red-900 dark:bg-red-950/30">
-                <AlertCircle size={32} className="mx-auto text-red-500" />
-                <h3 className="mt-4 text-lg font-semibold">Could not load courses</h3>
-                <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">Check that the server is running, then try again.</p>
-                <Button onClick={retry} className="mt-5 rounded-xl bg-teal-600 text-white hover:bg-teal-700">Try again</Button>
-              </div>
-            )}
-
-            {status === "ready" && courses.length === 0 && (
-              <div className="rounded-2xl border border-dashed border-slate-300 py-20 text-center dark:border-slate-700">
-                <Search size={32} className="mx-auto text-slate-300" />
-                {noFilters ? (
-                  <>
-                    <h3 className="mt-4 text-lg font-semibold">No courses published yet</h3>
-                    <p className="mt-1 text-sm text-slate-500">Courses appear here after a teacher submits them and an admin approves them.</p>
-                  </>
-                ) : (
-                  <>
-                    <h3 className="mt-4 text-lg font-semibold">No courses found</h3>
-                    <p className="mt-1 text-sm text-slate-500">Try a different search or clear the filters.</p>
-                    <Button onClick={reset} className="mt-5 rounded-xl bg-teal-600 text-white hover:bg-teal-700">Clear all filters</Button>
-                  </>
-                )}
-              </div>
-            )}
-
-            {status === "ready" && courses.length > 0 && (
-              <div className={view === "grid" ? "grid gap-6 sm:grid-cols-2 xl:grid-cols-3" : "space-y-5"}>
-                {courses.map((c) => (
-                  <CourseCard key={c.id} course={c} view={view} liked={ids.has(c.id)} onToggleLike={() => toggle(c.id)} />
-                ))}
-              </div>
-            )}
-
-            {status === "ready" && pages > 1 && (
-              <div className="mt-10 flex items-center justify-center gap-2">
-                <Button variant="outline" size="sm" disabled={current === 1} onClick={() => setPage(current - 1)} className="rounded-lg">
-                  <ChevronLeft size={14} /> Prev
-                </Button>
-                {Array.from({ length: pages }).map((_, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => setPage(i + 1)}
-                    aria-current={current === i + 1 ? "page" : undefined}
-                    className={`h-9 w-9 rounded-lg text-sm font-medium ${current === i + 1 ? "bg-teal-600 text-white" : "border border-slate-200 hover:bg-slate-50 dark:border-slate-700"}`}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
-                <Button variant="outline" size="sm" disabled={current === pages} onClick={() => setPage(current + 1)} className="rounded-lg">
-                  Next <ChevronRight size={14} />
-                </Button>
-              </div>
-            )}
+        <div className="mt-10 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-teal-200 bg-teal-50/60 p-6 dark:border-teal-900 dark:bg-teal-950/30">
+          <div>
+            <p className="font-bold text-slate-900 dark:text-white">Do not see a role that fits?</p>
+            <p className="text-sm text-slate-500">Tell us how you would like to help. We read every message.</p>
           </div>
+          <Link
+            to="/contact"
+            className="inline-flex h-11 items-center gap-2 rounded-xl bg-teal-600 px-5 text-sm font-semibold text-white hover:bg-teal-700"
+          >
+            Get in touch <ArrowRight size={16} />
+          </Link>
         </div>
       </section>
     </>
