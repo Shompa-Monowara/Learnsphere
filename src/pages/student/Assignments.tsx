@@ -23,11 +23,14 @@ const PILL: Record<Display, { label: string; style: string }> = {
   graded: { label: "Graded", style: "bg-green-50 text-green-700" },
 }
 
+const MAX_FILE_MB = 25
+
 const displayStatus = (a: AssignmentItem): Display =>
   a.status === "pending" && new Date(a.dueDate) < new Date() ? "overdue" : a.status
 
 function Detail({ item, onDone }: { item: AssignmentItem; onDone: () => Promise<void> }) {
   const [file, setFile] = useState<File | null>(null)
+  const [text, setText] = useState(item.submission?.text ?? "")
   const [note, setNote] = useState("")
   const [drag, setDrag] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -37,10 +40,29 @@ function Detail({ item, onDone }: { item: AssignmentItem; onDone: () => Promise<
   const status = displayStatus(item)
   const graded = item.status === "graded"
 
+  const type = item.submissionType ?? "file"
+  const needsFile = type === "file" || type === "both"
+  const needsText = type === "text" || type === "both"
+  const allowedTypes = (item.allowedFileTypes ?? []).map((t) => t.replace(/^\./, "").toLowerCase())
+  const maxMB = Math.min(item.maxFileSizeMB ?? MAX_FILE_MB, MAX_FILE_MB)
+
+  const pastDue = new Date(item.dueDate) < new Date()
+  const lateBlocked = pastDue && item.allowLate === false
+  const resubmitBlocked = !!item.submission && item.allowResubmission === false
+  const locked = lateBlocked || resubmitBlocked
+
+  const hasFile = !!file || !!item.submission?.fileUrl
+  const ready = (!needsFile || hasFile) && (!needsText || text.trim().length > 0)
+
   const pick = (f?: File | null) => {
     if (!f) return
-    if (f.size > 50 * 1024 * 1024) {
-      setMsg({ type: "error", text: "File must be 50 MB or smaller" })
+    const ext = (f.name.split(".").pop() || "").toLowerCase()
+    if (allowedTypes.length > 0 && !allowedTypes.includes(ext)) {
+      setMsg({ type: "error", text: `Only these file types are accepted: ${allowedTypes.join(", ")}` })
+      return
+    }
+    if (f.size > maxMB * 1024 * 1024) {
+      setMsg({ type: "error", text: `File must be ${maxMB} MB or smaller` })
       return
     }
     setMsg(null)
@@ -48,12 +70,13 @@ function Detail({ item, onDone }: { item: AssignmentItem; onDone: () => Promise<
   }
 
   const submit = async () => {
-    if (!file) return
+    if (!ready) return
     setBusy(true)
     setMsg(null)
     try {
       const fd = new FormData()
-      fd.append("file", file)
+      if (needsFile && file) fd.append("file", file)
+      if (needsText) fd.append("text", text.trim())
       fd.append("note", note)
       await api.post(`/assignments/${item._id}/submit`, fd, { headers: { "Content-Type": "multipart/form-data" } })
       setFile(null)
@@ -115,11 +138,16 @@ function Detail({ item, onDone }: { item: AssignmentItem; onDone: () => Promise<
 
         {item.submission && (
           <div className="mt-2 rounded-xl border border-slate-100 p-4 dark:border-slate-800">
-            <a href={item.submission.fileUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm font-medium text-teal-700 hover:underline">
-              <FileText size={16} /> {fileNameFromUrl(item.submission.fileUrl)}
-            </a>
+            {item.submission.fileUrl && (
+              <a href={item.submission.fileUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm font-medium text-teal-700 hover:underline">
+                <FileText size={16} /> {item.submission.fileName || fileNameFromUrl(item.submission.fileUrl)}
+              </a>
+            )}
+            {item.submission.text && (
+              <p className="mt-2 whitespace-pre-line text-sm text-slate-700 dark:text-slate-200">{item.submission.text}</p>
+            )}
             {item.submission.isLate && <p className="mt-1 text-xs text-red-600">Submitted late</p>}
-            {item.submission.note && <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{item.submission.note}</p>}
+            {item.submission.note && <p className="mt-2 text-sm text-slate-500">Note: {item.submission.note}</p>}
           </div>
         )}
 
@@ -132,60 +160,107 @@ function Detail({ item, onDone }: { item: AssignmentItem; onDone: () => Promise<
               <p className="mt-1 text-sm text-slate-700 dark:text-slate-200">{item.submission.feedback}</p>
             )}
           </div>
+        ) : locked ? (
+          <div className="mt-3">
+            <Notice type="error">
+              {lateBlocked
+                ? "The deadline has passed and this assignment no longer accepts late submissions."
+                : "Resubmission is not allowed for this assignment."}
+            </Notice>
+          </div>
         ) : (
           <>
-            <div
-              onDragOver={(e) => {
-                e.preventDefault()
-                setDrag(true)
-              }}
-              onDragLeave={() => setDrag(false)}
-              onDrop={(e) => {
-                e.preventDefault()
-                setDrag(false)
-                pick(e.dataTransfer.files?.[0])
-              }}
-              onClick={() => inputRef.current?.click()}
-              className={cn(
-                "mt-3 flex cursor-pointer flex-col items-center rounded-2xl border-2 border-dashed px-6 py-10 text-center transition-colors",
-                drag ? "border-teal-500 bg-teal-50 dark:bg-teal-500/10" : "border-slate-200 hover:border-teal-400 dark:border-slate-700"
-              )}
-            >
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-teal-50 text-teal-600">
-                <CloudUpload size={22} />
-              </span>
-              <p className="mt-3 text-sm font-semibold text-slate-900 dark:text-white">
-                {item.submission ? "Drop a new file to resubmit, or click to browse" : "Drag & drop your files, or click to browse"}
-              </p>
-              <p className="mt-1 text-xs text-slate-500">ZIP, PDF, or image · up to 50 MB</p>
-              <input ref={inputRef} type="file" hidden onChange={(e) => pick(e.target.files?.[0])} />
-            </div>
+            {pastDue && <div className="mt-3"><Notice type="error">The deadline has passed. Your submission will be marked as late.</Notice></div>}
 
-            {file && (
-              <div className="mt-3 flex items-center gap-3 rounded-xl border border-slate-100 p-3 dark:border-slate-800">
-                <FileText size={18} className="text-teal-600" />
-                <span className="flex-1 truncate text-sm font-medium">{file.name}</span>
-                <span className="text-xs text-slate-500">{formatBytes(file.size)}</span>
-                <button type="button" onClick={() => setFile(null)} aria-label="Remove file" className="text-slate-400 hover:text-red-500">
-                  <X size={16} />
-                </button>
-              </div>
+            {needsFile && (
+              <>
+                <div
+                  onDragOver={(e) => {
+                    e.preventDefault()
+                    setDrag(true)
+                  }}
+                  onDragLeave={() => setDrag(false)}
+                  onDrop={(e) => {
+                    e.preventDefault()
+                    setDrag(false)
+                    pick(e.dataTransfer.files?.[0])
+                  }}
+                  onClick={() => inputRef.current?.click()}
+                  className={cn(
+                    "mt-3 flex cursor-pointer flex-col items-center rounded-2xl border-2 border-dashed px-6 py-10 text-center transition-colors",
+                    drag ? "border-teal-500 bg-teal-50 dark:bg-teal-500/10" : "border-slate-200 hover:border-teal-400 dark:border-slate-700"
+                  )}
+                >
+                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-teal-50 text-teal-600">
+                    <CloudUpload size={22} />
+                  </span>
+                  <p className="mt-3 text-sm font-semibold text-slate-900 dark:text-white">
+                    {item.submission?.fileUrl ? "Drop a new file to resubmit, or click to browse" : "Drag & drop your file, or click to browse"}
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    {allowedTypes.length > 0 ? allowedTypes.join(", ").toUpperCase() : "PDF, ZIP, DOC, PPT, XLS, TXT or image"} · up to {maxMB} MB
+                  </p>
+                  <input
+                    ref={inputRef}
+                    type="file"
+                    hidden
+                    accept={allowedTypes.length > 0 ? allowedTypes.map((t) => `.${t}`).join(",") : undefined}
+                    onChange={(e) => {
+                      pick(e.target.files?.[0])
+                      e.target.value = ""
+                    }}
+                  />
+                </div>
+
+                {file && (
+                  <div className="mt-3 flex items-center gap-3 rounded-xl border border-slate-100 p-3 dark:border-slate-800">
+                    <FileText size={18} className="text-teal-600" />
+                    <span className="flex-1 truncate text-sm font-medium">{file.name}</span>
+                    <span className="text-xs text-slate-500">{formatBytes(file.size)}</span>
+                    <button type="button" onClick={() => setFile(null)} aria-label="Remove file" className="text-slate-400 hover:text-red-500">
+                      <X size={16} />
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+
+            {needsText && (
+              <textarea
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                rows={6}
+                maxLength={10000}
+                placeholder="Write your answer here"
+                aria-label="Your answer"
+                className={`${INPUT} mt-3`}
+              />
             )}
 
             <textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              rows={3}
+              rows={2}
               placeholder="Add a note for your instructor (optional)"
               className={`${INPUT} mt-3`}
             />
 
             {msg && <div className="mt-3"><Notice type={msg.type}>{msg.text}</Notice></div>}
 
-            <div className="mt-4 flex items-center justify-between">
-              <span className="text-xs text-slate-500">{item.submission ? "Submitted — you can resubmit until it's graded" : "Not submitted yet"}</span>
-              <button type="button" onClick={() => void submit()} disabled={!file || busy} className={BTN_PRIMARY}>
-                <Send size={15} /> {busy ? "Submitting..." : "Submit assignment"}
+            <div className="mt-4 flex items-center justify-between gap-3">
+              <span className="text-xs text-slate-500">
+                {item.submission
+                  ? item.allowResubmission === false
+                    ? "Submitted"
+                    : "Submitted — you can resubmit until it's graded"
+                  : needsFile && needsText
+                    ? "A file and a written answer are both required"
+                    : needsText
+                      ? "Written answer required"
+                      : "Not submitted yet"}
+              </span>
+              <button type="button" onClick={() => void submit()} disabled={!ready || busy} className={BTN_PRIMARY}>
+                <Send size={15} /> {busy ? "Submitting..." : item.submission ? "Resubmit" : "Submit assignment"}
               </button>
             </div>
           </>

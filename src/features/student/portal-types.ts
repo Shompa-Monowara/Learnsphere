@@ -22,9 +22,16 @@ export interface AssignmentItem {
   attachments: string[]
   course: { _id: string; title: string } | null
   status: "pending" | "submitted" | "graded"
+  submissionType?: "file" | "text" | "both"
+  allowLate?: boolean
+  allowResubmission?: boolean
+  allowedFileTypes?: string[]
+  maxFileSizeMB?: number
   submission: {
     _id: string
     fileUrl: string
+    fileName?: string
+    text?: string
     note: string
     isLate: boolean
     status: "submitted" | "graded"
