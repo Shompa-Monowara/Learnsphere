@@ -130,11 +130,15 @@ export default function TeacherAssignments() {
         }
       />
 
-      {error && <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>}
+      {error && (
+        <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600 dark:bg-red-500/10 dark:text-red-400">
+          {error}
+        </p>
+      )}
 
       {/* Course nai: age course banate bolo */}
       {!loading && !error && data.courses.length === 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
           <p>You need a course before you can create assignments.</p>
           <Link to="/teacher/builder" className="font-semibold underline">
             Go to Course Builder
@@ -146,13 +150,15 @@ export default function TeacherAssignments() {
       {loading ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="h-40 animate-pulse rounded-2xl bg-slate-100" />
+            <div key={i} className="h-40 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800" />
           ))}
         </div>
       ) : data.assignments.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-10 text-center">
-          <p className="font-semibold text-slate-900">No assignments yet</p>
-          <p className="mt-1 text-sm text-slate-500">Create your first assignment to start collecting work.</p>
+        <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-10 text-center dark:border-slate-700 dark:bg-slate-900">
+          <p className="font-semibold text-slate-900 dark:text-white">No assignments yet</p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Create your first assignment to start collecting work.
+          </p>
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -169,12 +175,12 @@ export default function TeacherAssignments() {
                   if (e.key === "Enter") setSelected(on ? null : a.id);
                 }}
                 className={cn(
-                  "group cursor-pointer rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100 transition hover:shadow-md",
-                  on && "ring-2 ring-teal-500",
+                  "group cursor-pointer rounded-2xl bg-white p-4 shadow-sm transition hover:shadow-md dark:bg-slate-900",
+                  on ? "ring-2 ring-teal-500" : "ring-1 ring-slate-100 dark:ring-slate-800",
                 )}
               >
                 <div className="flex items-start justify-between">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-50 text-teal-600">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-50 text-teal-600 dark:bg-teal-500/10 dark:text-teal-400">
                     <CardIcon />
                   </div>
 
@@ -196,12 +202,12 @@ export default function TeacherAssignments() {
                   </div>
                 </div>
 
-                <p className="mt-3 line-clamp-1 text-sm font-bold text-slate-900">{a.title}</p>
-                <p className="line-clamp-1 text-xs text-slate-500">{a.courseTitle}</p>
-                <p className="mt-1 text-[11px] font-medium text-teal-700">
+                <p className="mt-3 line-clamp-1 text-sm font-bold text-slate-900 dark:text-white">{a.title}</p>
+                <p className="line-clamp-1 text-xs text-slate-500 dark:text-slate-400">{a.courseTitle}</p>
+                <p className="mt-1 text-[11px] font-medium text-teal-700 dark:text-teal-400">
                   {SUBMISSION_TYPE_LABEL[a.submissionType ?? "file"]}
                 </p>
-                <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3 text-xs text-slate-500">
+                <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
                   <span>
                     {a.graded}/{a.total} graded
                   </span>
@@ -217,17 +223,17 @@ export default function TeacherAssignments() {
       <section>
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-bold text-slate-900">Submissions to grade</h2>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Submissions to grade</h2>
             {selected && (
               <button
                 onClick={() => setSelected(null)}
-                className="rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-medium text-teal-700"
+                className="rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-medium text-teal-700 dark:bg-teal-500/10 dark:text-teal-300"
               >
                 {selectedTitle} ✕
               </button>
             )}
           </div>
-          <div className="inline-flex rounded-xl bg-white p-0.5 text-[13px] shadow-sm ring-1 ring-slate-100">
+          <div className="inline-flex rounded-xl bg-white p-0.5 text-[13px] shadow-sm ring-1 ring-slate-100 dark:bg-slate-900 dark:ring-slate-800">
             {FILTERS.map((f) => (
               <button
                 key={f.key}
@@ -235,8 +241,8 @@ export default function TeacherAssignments() {
                 className={cn(
                   "rounded-lg px-3 py-1 font-medium",
                   filter === f.key
-                    ? "bg-teal-50 text-teal-700 shadow-sm"
-                    : "text-slate-500 hover:text-slate-700",
+                    ? "bg-teal-50 text-teal-700 shadow-sm dark:bg-teal-500/10 dark:text-teal-300"
+                    : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200",
                 )}
               >
                 {f.label}
@@ -245,10 +251,10 @@ export default function TeacherAssignments() {
           </div>
         </div>
 
-        <div className="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-slate-100">
+        <div className="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-slate-100 dark:bg-slate-900 dark:ring-slate-800">
           <table className="w-full min-w-[760px] text-left text-sm">
             <thead>
-              <tr className="text-xs uppercase tracking-wide text-slate-500">
+              <tr className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 <th className="px-4 py-3.5 font-semibold">Student</th>
                 <th className="px-4 py-3.5 font-semibold">Assignment</th>
                 <th className="px-4 py-3.5 font-semibold">Submitted</th>
@@ -260,14 +266,14 @@ export default function TeacherAssignments() {
             <tbody>
               {loading && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-10 text-center text-slate-400">
+                  <td colSpan={6} className="px-4 py-10 text-center text-slate-400 dark:text-slate-500">
                     Loading…
                   </td>
                 </tr>
               )}
               {!loading && rows.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-10 text-center text-slate-400">
+                  <td colSpan={6} className="px-4 py-10 text-center text-slate-400 dark:text-slate-500">
                     {filter === "pending"
                       ? "Nothing waiting for a grade."
                       : filter === "graded"
@@ -277,34 +283,36 @@ export default function TeacherAssignments() {
                 </tr>
               )}
               {rows.map((s) => (
-                <tr key={s.id} className="border-t border-slate-100">
+                <tr key={s.id} className="border-t border-slate-100 dark:border-slate-800">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-teal-50 text-xs font-semibold text-teal-700">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-teal-50 text-xs font-semibold text-teal-700 dark:bg-teal-500/10 dark:text-teal-300">
                         {initials(s.studentName)}
                       </div>
                       <div>
-                        <p className="font-bold text-slate-900">{s.studentName}</p>
-                        <p className="text-xs text-slate-500">{s.studentEmail}</p>
+                        <p className="font-bold text-slate-900 dark:text-white">{s.studentName}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">{s.studentEmail}</p>
                       </div>
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <p className="text-slate-800">{s.assignmentTitle}</p>
-                    {s.fileName && <p className="text-xs text-slate-400">{s.fileName}</p>}
-                    {!s.fileName && s.text && <p className="text-xs text-slate-400">Written answer</p>}
+                    <p className="text-slate-800 dark:text-slate-200">{s.assignmentTitle}</p>
+                    {s.fileName && <p className="text-xs text-slate-400 dark:text-slate-500">{s.fileName}</p>}
+                    {!s.fileName && s.text && (
+                      <p className="text-xs text-slate-400 dark:text-slate-500">Written answer</p>
+                    )}
                   </td>
-                  <td className="px-4 py-3 text-xs text-slate-500">
+                  <td className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400">
                     {fmtDateTime(s.submittedAt)}
                     {s.isLate && (
-                      <span className="ml-2 rounded-full bg-red-50 px-2 py-0.5 text-[11px] font-medium text-red-600">
+                      <span className="ml-2 rounded-full bg-red-50 px-2 py-0.5 text-[11px] font-medium text-red-600 dark:bg-red-500/10 dark:text-red-400">
                         Late
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-3 font-bold text-slate-900">
+                  <td className="px-4 py-3 font-bold text-slate-900 dark:text-white">
                     {s.score === null ? (
-                      <span className="font-normal text-slate-300">—</span>
+                      <span className="font-normal text-slate-300 dark:text-slate-600">—</span>
                     ) : (
                       `${s.score}/${s.totalMarks}`
                     )}
@@ -313,7 +321,9 @@ export default function TeacherAssignments() {
                     <span
                       className={cn(
                         "rounded-full px-2.5 py-1 text-xs font-medium",
-                        s.graded ? "bg-green-50 text-green-600" : "bg-amber-50 text-amber-600",
+                        s.graded
+                          ? "bg-green-50 text-green-600 dark:bg-green-500/10 dark:text-green-400"
+                          : "bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400",
                       )}
                     >
                       {s.graded ? "Graded" : "Pending"}
@@ -324,7 +334,7 @@ export default function TeacherAssignments() {
                       onClick={() => setGrading(s)}
                       className={
                         s.graded
-                          ? "rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                          ? "rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
                           : "rounded-lg bg-teal-600 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-teal-700"
                       }
                     >
@@ -393,7 +403,7 @@ export default function TeacherAssignments() {
       )}
 
       {toast && (
-        <div className="fixed bottom-6 left-1/2 z-[60] -translate-x-1/2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-white shadow-lg">
+        <div className="fixed bottom-6 left-1/2 z-[60] -translate-x-1/2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-white shadow-lg dark:bg-slate-100 dark:text-slate-900">
           {toast}
         </div>
       )}
@@ -420,8 +430,8 @@ function IconBtn({ label, icon, onClick, danger }: IconBtnProps) {
       className={cn(
         "rounded-md p-1.5 transition",
         danger
-          ? "text-slate-400 hover:bg-red-50 hover:text-red-600"
-          : "text-slate-400 hover:bg-slate-100 hover:text-slate-700",
+          ? "text-slate-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10 dark:hover:text-red-400"
+          : "text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200",
       )}
     >
       {icon}

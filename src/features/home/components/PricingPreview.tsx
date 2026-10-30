@@ -16,20 +16,20 @@ export default function PricingPreview() {
     <section className="bg-slate-50 py-20 dark:bg-slate-950">
       <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
         <div className="mx-auto max-w-2xl text-center">
-          <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-teal-700 dark:bg-teal-950 dark:text-teal-300">Simple pricing</span>
+          <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-teal-700 dark:bg-teal-500/10 dark:text-teal-300">Simple pricing</span>
           <h2 className="mt-4 text-4xl font-bold tracking-tight">Plans that grow with your academy</h2>
           <p className="mt-4 text-slate-600 dark:text-slate-400">Start free and upgrade only when your audience does. No hidden fees, cancel anytime.</p>
           <div className="mt-8 inline-flex rounded-full border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-900">
             {["Monthly", "Yearly"].map((label) => {
               const active = (label === "Yearly") === yearly
               return (
-                <button key={label} type="button" onClick={() => setYearly(label === "Yearly")} className={`rounded-full px-5 py-1.5 text-sm font-medium transition-colors ${active ? "bg-teal-600 text-white" : "text-slate-600"}`}>
+                <button key={label} type="button" onClick={() => setYearly(label === "Yearly")} className={`rounded-full px-5 py-1.5 text-sm font-medium transition-colors ${active ? "bg-teal-600 text-white" : "text-slate-600 dark:text-slate-300"}`}>
                   {label}
                 </button>
               )
             })}
           </div>
-          <p className="mt-3 text-xs font-semibold text-orange-600">Save 20% with yearly billing</p>
+          <p className="mt-3 text-xs font-semibold text-orange-600 dark:text-orange-400">Save 20% with yearly billing</p>
         </div>
 
         <div className="mt-12 grid items-start gap-6 md:grid-cols-3">

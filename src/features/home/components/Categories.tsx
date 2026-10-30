@@ -18,11 +18,11 @@ export default function Categories() {
       <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-teal-700 dark:bg-teal-950 dark:text-teal-300">Browse by topic</span>
+            <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-teal-700 dark:bg-teal-500/10 dark:text-teal-300">Browse by topic</span>
             <h2 className="mt-4 text-4xl font-bold tracking-tight">Popular course categories</h2>
             <p className="mt-3 max-w-lg text-slate-600 dark:text-slate-400">From first lines of code to advanced data models, find the track that moves you forward.</p>
           </div>
-          <Link to="/courses" className="flex items-center gap-1 text-sm font-semibold text-teal-600 hover:text-teal-700">
+          <Link to="/courses" className="flex items-center gap-1 text-sm font-semibold text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300">
             View all courses <ArrowRight size={16} />
           </Link>
         </div>

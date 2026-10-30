@@ -13,7 +13,7 @@ export default function FeaturedCourses() {
       <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <span className="rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-orange-600">Handpicked for you</span>
+            <span className="rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-orange-600 dark:bg-orange-500/10 dark:text-orange-300">Handpicked for you</span>
             <h2 className="mt-4 text-4xl font-bold tracking-tight">Featured courses loved by learners</h2>
             <p className="mt-3 max-w-lg text-slate-600 dark:text-slate-400">Fresh, highly rated courses across data, development, design, and business.</p>
           </div>
@@ -46,7 +46,7 @@ export default function FeaturedCourses() {
               <div className="p-5">
                 <h3 className="line-clamp-2 min-h-12 font-semibold leading-snug">{c.title}</h3>
                 <div className="mt-3 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-teal-100 text-[10px] font-semibold text-teal-700">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-teal-100 text-[10px] font-semibold text-teal-700 dark:bg-teal-500/20 dark:text-teal-300">
                     {c.instructor.split(" ").map((w) => w[0]).slice(0, 2).join("")}
                   </span>
                   {c.instructor}

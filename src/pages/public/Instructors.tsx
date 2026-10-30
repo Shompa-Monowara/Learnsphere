@@ -397,7 +397,7 @@ export default function Instructors() {
         )}
 
         {/* Become an instructor */}
-        <div className="relative mt-14 overflow-hidden rounded-3xl bg-linear-to-br from-teal-700 via-teal-600 to-teal-500 p-8 shadow-[0_20px_50px_-15px_rgba(13,148,136,0.5)] sm:p-12">
+        <div className="relative mt-14 overflow-hidden rounded-3xl bg-linear-to-br from-teal-600 via-teal-800 to-emerald-950 p-8 shadow-[0_20px_50px_-15px_color-mix(in_oklab,var(--brand)_50%,transparent)] sm:p-12">
           <div className="pointer-events-none absolute -right-16 -top-16 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
           <div className="relative flex flex-wrap items-center justify-between gap-8">
             <div className="max-w-xl">

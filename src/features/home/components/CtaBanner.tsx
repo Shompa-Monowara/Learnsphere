@@ -7,7 +7,7 @@ export default function CtaBanner() {
     <section className="py-16">
       <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
         <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-teal-600 via-teal-800 to-emerald-950 px-8 py-16 text-center text-white">
-          <div className="pointer-events-none absolute -right-10 -top-10 h-64 w-64 rounded-full bg-orange-400/20 blur-3xl" />
+          <div className="pointer-events-none absolute -right-10 -top-10 h-64 w-64 rounded-full bg-teal-300/25 blur-3xl" />
           <span className="relative inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-medium">
             <Rocket size={13} /> Launch your academy in a weekend
           </span>

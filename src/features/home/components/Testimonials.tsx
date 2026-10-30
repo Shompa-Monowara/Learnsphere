@@ -47,18 +47,18 @@ export default function Testimonials() {
   const visible = ITEMS.slice(page * 3, page * 3 + 3)
 
   return (
-    <section className="bg-white py-20 sm:py-24">
-      <div className="mx-auto max-w-[1240px] px-4 sm:px-6">
+    <section className="bg-white py-20 dark:bg-slate-900 sm:py-24">
+      <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
         {/* Section Header */}
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
-            <span className="inline-block rounded-full bg-[#ccfbf1]/80 px-3.5 py-1 text-[11px] font-bold uppercase tracking-wider text-[#0f766e]">
+            <span className="inline-block rounded-full bg-[#ccfbf1]/80 px-3.5 py-1 text-[11px] font-bold uppercase tracking-wider text-[#0f766e] dark:bg-teal-500/10 dark:text-teal-300">
               Loved by educators
             </span>
-            <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl lg:text-[42px]">
+            <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-4xl lg:text-[42px]">
               What our community says
             </h2>
-            <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-500 sm:text-base">
+            <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-500 dark:text-slate-400 sm:text-base">
               Real feedback from academy owners, instructors, and students who use LearnSphere every week.
             </p>
           </div>
@@ -68,7 +68,7 @@ export default function Testimonials() {
             <Button
               variant="outline"
               size="icon"
-              className="h-10 w-10 rounded-full border-slate-200 bg-white text-slate-600 shadow-2xs hover:bg-slate-50 hover:text-slate-900"
+              className="h-10 w-10 rounded-full border-slate-200 bg-white text-slate-600 shadow-2xs hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white"
               onClick={() => setPage((p) => (p - 1 + pages) % pages)}
               aria-label="Previous"
             >
@@ -77,7 +77,7 @@ export default function Testimonials() {
             <Button
               variant="outline"
               size="icon"
-              className="h-10 w-10 rounded-full border-slate-200 bg-white text-slate-600 shadow-2xs hover:bg-slate-50 hover:text-slate-900"
+              className="h-10 w-10 rounded-full border-slate-200 bg-white text-slate-600 shadow-2xs hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white"
               onClick={() => setPage((p) => (p + 1) % pages)}
               aria-label="Next"
             >
@@ -91,7 +91,7 @@ export default function Testimonials() {
           {visible.map((t) => (
             <figure
               key={t.name}
-              className="flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-7 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] transition-all hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)]"
+              className="flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-7 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] transition-all hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] dark:border-slate-800 dark:bg-slate-800/50 dark:shadow-none dark:hover:border-slate-700"
             >
               <div>
                 {/* 5 Rating Stars */}
@@ -102,20 +102,20 @@ export default function Testimonials() {
                 </div>
 
                 {/* Feedback Quote */}
-                <blockquote className="mt-4 text-[13px] leading-relaxed text-slate-600">
+                <blockquote className="mt-4 text-[13px] leading-relaxed text-slate-600 dark:text-slate-300">
                   “{t.text}”
                 </blockquote>
               </div>
 
               {/* Author Info with Divider & Image Avatar */}
-              <figcaption className="mt-6 flex items-center gap-3.5 border-t border-slate-100 pt-5">
+              <figcaption className="mt-6 flex items-center gap-3.5 border-t border-slate-100 pt-5 dark:border-slate-700">
                 <img
                   src={t.avatar}
                   alt={t.name}
                   className="h-10 w-10 shrink-0 rounded-full object-cover shadow-2xs"
                 />
                 <div className="min-w-0">
-                  <span className="block text-sm font-bold text-slate-900 leading-snug truncate">
+                  <span className="block text-sm font-bold text-slate-900 leading-snug truncate dark:text-white">
                     {t.name}
                   </span>
                   <span className="block text-xs font-medium text-slate-400 mt-0.5 truncate">
@@ -136,7 +136,9 @@ export default function Testimonials() {
               onClick={() => setPage(i)}
               aria-label={`Page ${i + 1}`}
               className={`h-2 rounded-full transition-all duration-300 ${
-                i === page ? "w-6 bg-[#0d9488]" : "w-2 bg-slate-200 hover:bg-slate-300"
+                i === page
+                  ? "w-6 bg-[#0d9488]"
+                  : "w-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600"
               }`}
             />
           ))}

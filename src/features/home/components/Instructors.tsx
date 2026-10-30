@@ -35,24 +35,24 @@ const INSTRUCTORS_DATA = [
 
 export default function Instructors() {
   return (
-    <section className="bg-white py-20 sm:py-24">
-      <div className="mx-auto max-w-[1240px] px-4 sm:px-6">
+    <section className="bg-white py-20 dark:bg-slate-900 sm:py-24">
+      <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
         {/* Header Section */}
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
-            <span className="inline-block rounded-full bg-[#ccfbf1]/80 px-3.5 py-1 text-[11px] font-bold uppercase tracking-wider text-[#0f766e]">
+            <span className="inline-block rounded-full bg-[#ccfbf1]/80 px-3.5 py-1 text-[11px] font-bold uppercase tracking-wider text-[#0f766e] dark:bg-teal-500/10 dark:text-teal-300">
               Learn from the best
             </span>
-            <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl lg:text-[42px]">
+            <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-4xl lg:text-[42px]">
               Top-rated instructors
             </h2>
-            <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-500 sm:text-base">
+            <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-500 dark:text-slate-400 sm:text-base">
               Practitioners who still work in their field and teach what they actually use every day.
             </p>
           </div>
           <Link
             to="/instructors"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#0d9488] transition-colors hover:text-[#0f766e]"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#0d9488] transition-colors hover:text-[#0f766e] dark:text-teal-400 dark:hover:text-teal-300"
           >
             View all instructors <ArrowRight size={16} />
           </Link>
@@ -63,26 +63,26 @@ export default function Instructors() {
           {INSTRUCTORS_DATA.map((p) => (
             <div
               key={p.name}
-              className="flex flex-col justify-between rounded-2xl border border-slate-100 bg-white p-6 text-center shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] transition-all hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)]"
+              className="flex flex-col justify-between rounded-2xl border border-slate-100 bg-white p-6 text-center shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] transition-all hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] dark:border-slate-800 dark:bg-slate-800/50 dark:shadow-none dark:hover:border-slate-700"
             >
               <div>
                 {/* Profile Image with Verified Badge */}
                 <div className="relative mx-auto h-24 w-24">
-                  <div className="h-full w-full overflow-hidden rounded-full border-2 border-teal-100 p-0.5 shadow-xs">
+                  <div className="h-full w-full overflow-hidden rounded-full border-2 border-teal-100 p-0.5 shadow-xs dark:border-teal-800">
                     <img
                       src={p.image}
                       alt={p.name}
                       className="h-full w-full rounded-full object-cover"
                     />
                   </div>
-                  <span className="absolute bottom-0 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#0d9488] text-white ring-2 ring-white">
+                  <span className="absolute bottom-0 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#0d9488] text-white ring-2 ring-white dark:ring-slate-800">
                     <Check size={12} strokeWidth={3} />
                   </span>
                 </div>
 
                 {/* Name & Role */}
-                <h3 className="mt-5 text-base font-bold text-slate-900">{p.name}</h3>
-                <p className="mt-1.5 min-h-10 text-xs leading-relaxed text-slate-500">
+                <h3 className="mt-5 text-base font-bold text-slate-900 dark:text-white">{p.name}</h3>
+                <p className="mt-1.5 min-h-10 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
                   {p.role}
                 </p>
 
@@ -99,7 +99,7 @@ export default function Instructors() {
               </div>
 
               {/* Bottom Details Footer */}
-              <div className="mt-5 flex items-center justify-center gap-4 border-t border-slate-100 pt-4 text-xs font-medium text-slate-500">
+              <div className="mt-5 flex items-center justify-center gap-4 border-t border-slate-100 pt-4 text-xs font-medium text-slate-500 dark:border-slate-700 dark:text-slate-400">
                 <span className="flex items-center gap-1.5">
                   <Users size={14} className="text-slate-400" />
                   {p.students}

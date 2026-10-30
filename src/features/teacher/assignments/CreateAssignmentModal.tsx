@@ -40,7 +40,7 @@ interface CheckProps {
 
 function Check({ checked, onChange, title, hint }: CheckProps) {
   return (
-    <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-100 px-3 py-2.5 hover:bg-slate-50">
+    <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-100 px-3 py-2.5 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/60">
       <input
         type="checkbox"
         className="mt-0.5 h-4 w-4 accent-teal-600"
@@ -48,8 +48,8 @@ function Check({ checked, onChange, title, hint }: CheckProps) {
         onChange={(e) => onChange(e.target.checked)}
       />
       <span>
-        <span className="block text-sm font-medium text-slate-900">{title}</span>
-        <span className="block text-xs text-slate-500">{hint}</span>
+        <span className="block text-sm font-medium text-slate-900 dark:text-white">{title}</span>
+        <span className="block text-xs text-slate-500 dark:text-slate-400">{hint}</span>
       </span>
     </label>
   );
@@ -154,10 +154,10 @@ export default function CreateAssignmentModal({ courses, initial, onClose, onSav
   /* Teacher er kono course nai: form na dekhiye age course banate bolo */
   if (courses.length === 0 && !editing) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm">
-        <div className="w-full max-w-md rounded-2xl bg-white p-6 text-center shadow-2xl">
-          <h2 className="text-lg font-bold text-slate-900">Create a course first</h2>
-          <p className="mt-2 text-sm text-slate-600">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm dark:bg-black/60">
+        <div className="w-full max-w-md rounded-2xl bg-white p-6 text-center shadow-2xl dark:bg-slate-900 dark:ring-1 dark:ring-slate-800">
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white">Create a course first</h2>
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
             Assignments belong to a course. Build your first course, then come back to add assignments.
           </p>
           <div className="mt-5 flex justify-center gap-3">
@@ -174,27 +174,27 @@ export default function CreateAssignmentModal({ courses, initial, onClose, onSav
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm">
-      <div className="max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-white shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm dark:bg-black/60">
+      <div className="max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-white shadow-2xl dark:bg-slate-900 dark:ring-1 dark:ring-slate-800">
         <div className="flex items-start justify-between px-6 pt-6">
           <div>
-            <h2 className="text-lg font-bold text-slate-900">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">
               {editing ? "Edit assignment" : "Create assignment"}
             </h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
               Set the brief, how students submit, deadline, and total marks.
             </p>
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100"
+            className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
             aria-label="Close"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="mt-4 space-y-4 border-t border-slate-100 px-6 py-5">
+        <div className="mt-4 space-y-4 border-t border-slate-100 px-6 py-5 dark:border-slate-800">
           <div>
             <label className={LABEL}>Title</label>
             <input
@@ -209,7 +209,7 @@ export default function CreateAssignmentModal({ courses, initial, onClose, onSav
           <div>
             <label className={LABEL}>Course</label>
             <select
-              className={`${FIELD} ${ring(errs.course)} disabled:bg-slate-50 disabled:text-slate-500`}
+              className={`${FIELD} ${ring(errs.course)} disabled:bg-slate-50 disabled:text-slate-500 dark:disabled:bg-slate-800`}
               value={courseId}
               disabled={editing}
               onChange={(e) => setCourseId(e.target.value)}
@@ -249,18 +249,18 @@ export default function CreateAssignmentModal({ courses, initial, onClose, onSav
                     className={cn(
                       "rounded-xl border px-3 py-2.5 text-left transition disabled:cursor-not-allowed disabled:opacity-60",
                       active
-                        ? "border-teal-500 bg-teal-50 ring-1 ring-teal-500/30"
-                        : "border-slate-200 hover:bg-slate-50",
+                        ? "border-teal-500 bg-teal-50 ring-1 ring-teal-500/30 dark:bg-teal-500/10"
+                        : "border-slate-200 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800",
                     )}
                   >
-                    <p className="text-sm font-semibold text-slate-900">{o.label}</p>
-                    <p className="mt-0.5 text-xs text-slate-500">{o.hint}</p>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white">{o.label}</p>
+                    <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{o.hint}</p>
                   </button>
                 );
               })}
             </div>
             {lockedType && (
-              <p className="mt-1.5 text-xs text-slate-500">
+              <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
                 Locked because students have already submitted work.
               </p>
             )}
@@ -298,7 +298,7 @@ export default function CreateAssignmentModal({ courses, initial, onClose, onSav
               <label className={LABEL}>Deadline</label>
               <input
                 type="date"
-                className={`${FIELD} ${ring(errs.deadline)}`}
+                className={`${FIELD} ${ring(errs.deadline)} dark:[color-scheme:dark]`}
                 value={deadline}
                 onChange={(e) => setDeadline(e.target.value)}
               />
@@ -321,7 +321,7 @@ export default function CreateAssignmentModal({ courses, initial, onClose, onSav
             <div>
               <label className={LABEL}>Attachments</label>
               <label
-                className={`${FIELD} flex cursor-pointer items-center gap-2 text-sm text-slate-600 hover:bg-slate-50`}
+                className={`${FIELD} flex cursor-pointer items-center gap-2 text-sm text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800`}
               >
                 {uploading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -348,9 +348,9 @@ export default function CreateAssignmentModal({ courses, initial, onClose, onSav
               {files.map((f, i) => (
                 <li
                   key={f.url}
-                  className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-sm"
+                  className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-sm dark:bg-slate-800"
                 >
-                  <span className="truncate text-slate-700">{f.name}</span>
+                  <span className="truncate text-slate-700 dark:text-slate-200">{f.name}</span>
                   <button
                     onClick={() => setFiles((p) => p.filter((_, x) => x !== i))}
                     className="ml-3 text-slate-400 hover:text-red-500"
@@ -385,10 +385,14 @@ export default function CreateAssignmentModal({ courses, initial, onClose, onSav
             />
           </div>
 
-          {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
+          {error && (
+            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-500/10 dark:text-red-400">
+              {error}
+            </p>
+          )}
         </div>
 
-        <div className="flex items-center justify-end gap-3 border-t border-slate-100 px-6 py-4">
+        <div className="flex items-center justify-end gap-3 border-t border-slate-100 px-6 py-4 dark:border-slate-800">
           <button onClick={onClose} className={BTN_OUTLINE} disabled={saving}>
             Cancel
           </button>

@@ -80,8 +80,8 @@ const SOCIALS: { label: string; href: string; icon: ReactNode }[] = [
 
 export default function Footer() {
   return (
-    <footer className="bg-[#0f3a36] text-[#4fe3b9]">
-      <div className="mx-auto max-w-6xl px-4 pt-14 sm:px-6">
+    <footer className="bg-[#0f3a36] text-teal-200">
+      <div className="mx-auto max-w-[1200px] px-4 pt-14 sm:px-6">
         <div className="grid gap-10 md:grid-cols-[1.7fr_1fr_1fr_1fr_1fr]">
           <div>
             <Link to="/" className="flex items-center gap-2.5">
@@ -104,7 +104,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noreferrer"
                   aria-label={s.label}
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0c4a43] text-[#4fe3b9] transition-colors hover:bg-[#13605a] hover:text-white"
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-[#0c4a43] text-teal-200 transition-colors hover:bg-[#13605a] hover:text-white"
                 >
                   {s.icon}
                 </a>

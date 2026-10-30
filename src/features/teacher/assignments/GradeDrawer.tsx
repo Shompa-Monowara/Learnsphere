@@ -10,7 +10,7 @@ interface Props {
   onSaved: () => void;
 }
 
-const LABEL = "mb-1.5 block text-sm font-medium text-slate-900";
+const LABEL = "mb-1.5 block text-sm font-medium text-slate-900 dark:text-white";
 
 const isArchive = (name: string) => /\.(zip|rar|7z|tar|gz)$/i.test(name);
 
@@ -52,25 +52,28 @@ export default function GradeDrawer({ sub, onClose, onSaved }: Props) {
   const FileIcon = isArchive(sub.fileName) ? FileArchive : FileText;
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/40 backdrop-blur-sm" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex justify-end bg-slate-900/40 backdrop-blur-sm dark:bg-black/60"
+      onClick={onClose}
+    >
       <aside
-        className="flex h-full w-full max-w-md flex-col bg-white shadow-2xl"
+        className="flex h-full w-full max-w-md flex-col bg-white shadow-2xl dark:bg-slate-900 dark:ring-1 dark:ring-slate-800"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-5">
+        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-5 dark:border-slate-800">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-teal-50 text-sm font-semibold text-teal-700">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-teal-50 text-sm font-semibold text-teal-700 dark:bg-teal-500/10 dark:text-teal-300">
               {initials(sub.studentName)}
             </div>
             <div className="min-w-0">
-              <p className="truncate font-bold text-slate-900">{sub.studentName}</p>
-              <p className="truncate text-xs text-slate-500">{sub.assignmentTitle}</p>
+              <p className="truncate font-bold text-slate-900 dark:text-white">{sub.studentName}</p>
+              <p className="truncate text-xs text-slate-500 dark:text-slate-400">{sub.assignmentTitle}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100"
+            className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
             aria-label="Close"
           >
             <X className="h-5 w-5" />
@@ -81,20 +84,22 @@ export default function GradeDrawer({ sub, onClose, onSaved }: Props) {
         <div className="flex-1 space-y-5 overflow-y-auto px-5 py-5">
           {/* File card: file thakle, ba kichui na thakle */}
           {(hasFile || !hasText) && (
-            <div className="flex items-center gap-3 rounded-2xl border border-slate-100 p-4">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-600">
+            <div className="flex items-center gap-3 rounded-2xl border border-slate-100 p-4 dark:border-slate-800">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-600 dark:bg-teal-500/10 dark:text-teal-400">
                 <FileIcon className="h-5 w-5" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate font-bold text-slate-900">{sub.fileName || "No file attached"}</p>
-                <p className="text-xs text-slate-500">{meta}</p>
+                <p className="truncate font-bold text-slate-900 dark:text-white">
+                  {sub.fileName || "No file attached"}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{meta}</p>
               </div>
               {hasFile && (
                 <a
                   href={sub.fileUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 px-3.5 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+                  className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 px-3.5 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
                 >
                   <Eye className="h-4 w-4" /> View
                 </a>
@@ -106,10 +111,10 @@ export default function GradeDrawer({ sub, onClose, onSaved }: Props) {
           {hasText && (
             <div>
               <div className="mb-1.5 flex items-center justify-between">
-                <label className="text-sm font-medium text-slate-900">Written answer</label>
-                {!hasFile && <span className="text-xs text-slate-500">{meta}</span>}
+                <label className="text-sm font-medium text-slate-900 dark:text-white">Written answer</label>
+                {!hasFile && <span className="text-xs text-slate-500 dark:text-slate-400">{meta}</span>}
               </div>
-              <div className="max-h-80 overflow-y-auto whitespace-pre-wrap rounded-xl bg-slate-50 p-4 text-sm leading-relaxed text-slate-700">
+              <div className="max-h-80 overflow-y-auto whitespace-pre-wrap rounded-xl bg-slate-50 p-4 text-sm leading-relaxed text-slate-700 dark:bg-slate-800 dark:text-slate-200">
                 {sub.text}
               </div>
             </div>
@@ -137,18 +142,22 @@ export default function GradeDrawer({ sub, onClose, onSaved }: Props) {
               value={feedback}
               onChange={(e) => setFeedback(e.target.value)}
             />
-            <p className="mt-1.5 text-xs text-slate-400">{feedback.length}/500 characters</p>
+            <p className="mt-1.5 text-xs text-slate-400 dark:text-slate-500">{feedback.length}/500 characters</p>
           </div>
 
-          {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
+          {error && (
+            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-500/10 dark:text-red-400">
+              {error}
+            </p>
+          )}
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-2 border-t border-slate-100 px-5 py-5">
+        <div className="flex items-center justify-end gap-2 border-t border-slate-100 px-5 py-5 dark:border-slate-800">
           <button
             onClick={onClose}
             disabled={saving}
-            className="px-4 py-2 text-sm font-semibold text-slate-700 hover:text-slate-900"
+            className="px-4 py-2 text-sm font-semibold text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
           >
             Cancel
           </button>

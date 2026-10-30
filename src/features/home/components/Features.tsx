@@ -1,12 +1,12 @@
 import { Award, BarChart3, ClipboardCheck, FileText, LayoutDashboard, PlayCircle } from "lucide-react"
 
 const FEATURES = [
-  { icon: PlayCircle, color: "bg-teal-50 text-teal-600", title: "Video lessons", desc: "Upload or link high-quality video lessons with chapters, playback speed, and resume-where-you-left-off progress." },
-  { icon: ClipboardCheck, color: "bg-orange-50 text-orange-500", title: "Quizzes with auto-grading", desc: "Build multiple-choice, multi-select, and short-answer quizzes. Results are graded instantly with explanations." },
-  { icon: FileText, color: "bg-teal-50 text-teal-600", title: "Assignments & grading", desc: "Collect file submissions, set deadlines, leave inline feedback, and return grades from a single review queue." },
-  { icon: BarChart3, color: "bg-teal-50 text-teal-600", title: "Progress tracking", desc: "See exactly where each student is, which lessons they struggle with, and how your course is performing in real time." },
-  { icon: Award, color: "bg-orange-50 text-orange-500", title: "PDF certificates", desc: "Automatically issue branded, downloadable completion certificates the moment a student finishes a course." },
-  { icon: LayoutDashboard, color: "bg-teal-50 text-teal-600", title: "Role-based dashboards", desc: "Dedicated, focused dashboards for admins, teachers, and students, so everyone sees what they need." },
+  { icon: PlayCircle, color: "bg-teal-50 text-teal-600 dark:bg-teal-500/10 dark:text-teal-400", title: "Video lessons", desc: "Upload or link high-quality video lessons with chapters, playback speed, and resume-where-you-left-off progress." },
+  { icon: ClipboardCheck, color: "bg-orange-50 text-orange-500 dark:bg-orange-500/10 dark:text-orange-400", title: "Quizzes with auto-grading", desc: "Build multiple-choice, multi-select, and short-answer quizzes. Results are graded instantly with explanations." },
+  { icon: FileText, color: "bg-teal-50 text-teal-600 dark:bg-teal-500/10 dark:text-teal-400", title: "Assignments & grading", desc: "Collect file submissions, set deadlines, leave inline feedback, and return grades from a single review queue." },
+  { icon: BarChart3, color: "bg-teal-50 text-teal-600 dark:bg-teal-500/10 dark:text-teal-400", title: "Progress tracking", desc: "See exactly where each student is, which lessons they struggle with, and how your course is performing in real time." },
+  { icon: Award, color: "bg-orange-50 text-orange-500 dark:bg-orange-500/10 dark:text-orange-400", title: "PDF certificates", desc: "Automatically issue branded, downloadable completion certificates the moment a student finishes a course." },
+  { icon: LayoutDashboard, color: "bg-teal-50 text-teal-600 dark:bg-teal-500/10 dark:text-teal-400", title: "Role-based dashboards", desc: "Dedicated, focused dashboards for admins, teachers, and students, so everyone sees what they need." },
 ]
 
 export default function Features() {
@@ -14,7 +14,7 @@ export default function Features() {
     <section id="features" className="py-20">
       <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
         <div className="mx-auto max-w-2xl text-center">
-          <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-teal-700 dark:bg-teal-950 dark:text-teal-300">Everything in one place</span>
+          <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-teal-700 dark:bg-teal-500/10 dark:text-teal-300">Everything in one place</span>
           <h2 className="mt-4 text-4xl font-bold tracking-tight">A complete teaching toolkit, minus the busywork</h2>
           <p className="mt-4 text-slate-600 dark:text-slate-400">Stop stitching together five different tools. LearnSphere brings lessons, assessments, grading, progress, and certificates into one connected product.</p>
         </div>

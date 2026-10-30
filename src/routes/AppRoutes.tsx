@@ -62,6 +62,7 @@ import OAuthCallback from "@/features/auth/OAuthCallback"
 import Features from "@/pages/public/Features"
 import About from "@/pages/public/About"
 import VerifyCertificate from "@/pages/public/VerifyCertificate"
+import Unsubscribe from "@/pages/public/Unsubscribe"
 
 export default function AppRoutes() {
   return (
@@ -80,6 +81,7 @@ export default function AppRoutes() {
         <Route path="/faq" element={<Faq />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
+        <Route path="/unsubscribe/:token" element={<Unsubscribe />} />
         <Route path="/blog" element={<Blog />} />
         <Route path="/blog/:slug" element={<BlogPost />} />
         <Route path="/careers" element={<Careers />} />
